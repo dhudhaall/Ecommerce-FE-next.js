@@ -55,9 +55,11 @@ export default function AddToCart({ isOpen, onClose, product }: Props) {
                 cart.push(data);
             }
             localStorage.setItem("cart", JSON.stringify(cart));
+             window.dispatchEvent(new Event("cartUpdated"));
         } else {
 
             localStorage.setItem("cart", JSON.stringify([data]));
+             window.dispatchEvent(new Event("cartUpdated"));
 
         }
         closePopup();
@@ -200,7 +202,6 @@ export default function AddToCart({ isOpen, onClose, product }: Props) {
                             <span className="price">+ €{addon?.price}</span>
                         </label>
                     ))}
-
 
                 </div>}
 

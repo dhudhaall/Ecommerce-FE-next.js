@@ -9,7 +9,20 @@ export default function Navbar() {
   useEffect(() => {
     const stored = JSON.parse(localStorage.getItem("cart") || "[]");
     setCart(stored);
+
+      const handleStorage = () => loadCartCount();
+
+  window.addEventListener("cartUpdated", handleStorage);
+
+  return () => {
+    window.removeEventListener("cartUpdated", handleStorage);
+  };
   }, []);
+
+  const loadCartCount = () => {
+    const stored = JSON.parse(localStorage.getItem("cart") || "[]");
+    setCart(stored);
+  } 
 
 
   return (

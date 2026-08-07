@@ -37,8 +37,11 @@ export function StripeCardSection({ grandTotal, validateForm, buildPayload }: St
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+      
       const data = await res.json();
-      console.log("checkout id:", data.id);
+      const orderId =
+  data.orderId ?? data.orderID ?? data.order_id ?? data.id ?? data.order?.id;
+      console.log("checkout id:", orderId);
       console.log("checkout response:", data);
       if (!res.ok) throw new Error(data.error || "Could not start card payment.");
  

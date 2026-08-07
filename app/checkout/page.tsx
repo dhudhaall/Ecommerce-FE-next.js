@@ -288,7 +288,7 @@ const handlePayNow = async () => {
     );
 
     const data = await res.json();
-    console.log("checkout data", data)
+   
 
     // 💵 CASH
     if (payload.paymentMethod === "cash") {

@@ -123,8 +123,8 @@ export default function CartPage() {
   };
 
   const removeItem = (index: number) =>
-    setCart((prev) => prev.filter((_, i) => i !== index));
-
+     setCart((prev) => prev.filter((_, i) => i !== index));
+     window.dispatchEvent(new Event("cartUpdated"));
   const count = cart.reduce((n, it) => n + (Number(it?.quantity) || 1), 0);
   const displayTotal =
     pricing && Number.isFinite(pricing.total) ? pricing.total : subtotal;
