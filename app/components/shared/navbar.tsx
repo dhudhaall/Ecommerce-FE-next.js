@@ -10,7 +10,7 @@ export default function Navbar() {
     const stored = JSON.parse(localStorage.getItem("cart") || "[]");
     setCart(stored);
 
-      const handleStorage = () => loadCartCount();
+    const handleStorage = () => loadCartCount();
 
   window.addEventListener("cartUpdated", handleStorage);
 

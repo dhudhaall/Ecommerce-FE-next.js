@@ -243,8 +243,9 @@ export default function Checkout() {
         quantity: item.quantity,
         sizeId: item.size?.id ?? null,
         addonIds: item.addons.map((a) => a.id),
+        // notes: item.notes?.trim() || null,
       })) ?? [],
-    currency: "usd",
+    currency: "eur",
   });
 
   type OrderPayload = ReturnType<typeof buildPayload>;
@@ -288,34 +289,22 @@ const handlePayNow = async () => {
     );
 
     const data = await res.json();
-   
+    console.log("data checkout", data);
+    if(data.success){
+        localStorage.removeItem('cart');
+    }
+    if(!data.success){
+        setCartError("Checkout Failed.");
+        return;
+    }
 
     // 💵 CASH
     if (payload.paymentMethod === "cash") {
       
-      router.push("/success?orderId=");
+      router.push(`/success?orderId=$${data.id}`);
       return;
     }
 
-    // // 💳 STRIPE
-    // if (data.paymentType === "stripe") {
-    //   const stripe = await stripePromise;
-
-    //   const result = await stripe.confirmCardPayment(data.clientSecret, {
-    //     payment_method: {
-    //       card: cardElement, // from Stripe Elements
-    //       billing_details: {
-    //         name: payload.customer.firstName
-    //       }
-    //     }
-    //   });
-
-    //   if (result.error) {
-    //     alert(result.error.message);
-    //   } else {
-    //     router.push("/success");
-    //   }
-    // }
 
     // 🟡 PAYPAL
     if (data.paymentType === "paypal") {
@@ -339,7 +328,7 @@ const handlePayNow = async () => {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to place your order.");
-      window.location.href = `/checkout/success?orderId=${data.orderId}`;
+      if (res.ok) window.location.href = `/checkout/success?orderId=${data.orderId}`;
     } catch (err: any) {
       setApiError(err.message || "Something went wrong. Please try again.");
       setSubmitting(false);
@@ -388,7 +377,7 @@ const handlePayNow = async () => {
     () => ({
       mode: "payment",
       amount: Math.max(Math.round(grandTotal * 100), 50), // cents; Stripe minimum ≥ $0.50
-      currency: "usd",
+      currency: "eur",
       appearance: {
         theme: "stripe",
         variables: {

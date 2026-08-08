@@ -41,8 +41,11 @@ export function StripeCardSection({ grandTotal, validateForm, buildPayload }: St
       const data = await res.json();
       const orderId =
   data.orderId ?? data.orderID ?? data.order_id ?? data.id ?? data.order?.id;
-      console.log("checkout id:", orderId);
-      console.log("checkout response:", data);
+      
+        if(res.ok){
+            localStorage.removeItem('cart');
+        }
+     
       if (!res.ok) throw new Error(data.error || "Could not start card payment.");
  
       // 4) Confirm the payment with the card the user entered
@@ -51,7 +54,7 @@ export function StripeCardSection({ grandTotal, validateForm, buildPayload }: St
         clientSecret: data.clientSecret,
         confirmParams: {
           // Used only if the bank requires a redirect (e.g. 3D Secure)
-          return_url: `${window.location.origin}/checkout/success?orderId=${data.id}`,
+          return_url: `${window.location.origin}/success?orderId=${orderId}`,
         },
         redirect: "if_required",
       });
@@ -64,7 +67,10 @@ export function StripeCardSection({ grandTotal, validateForm, buildPayload }: St
  
       // 5) Paid (or processing) — go to the success page
       if (paymentIntent && ["succeeded", "processing"].includes(paymentIntent.status)) {
-        window.location.href = `/checkout/success?orderId=${data.id}&payment_intent=${paymentIntent.id}`;
+       
+        localStorage.removeItem('cart');
+    
+        window.location.href = `/success?orderId=${orderId}`;
       } else {
         setCardError("Payment was not completed. Please try again.");
       }
@@ -100,7 +106,7 @@ export function StripeCardSection({ grandTotal, validateForm, buildPayload }: St
           </>
         ) : (
           <>
-            <LockIcon /> Pay now Stripe· ${grandTotal.toFixed(2)}
+            <LockIcon /> Pay now ${grandTotal.toFixed(2)}
           </>
         )}
       </button>
