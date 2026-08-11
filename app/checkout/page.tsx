@@ -289,7 +289,7 @@ const handlePayNow = async () => {
     );
 
     const data = await res.json();
-    console.log("data checkout", data);
+   
     if(data.success){
         localStorage.removeItem('cart');
     }
@@ -316,43 +316,9 @@ const handlePayNow = async () => {
     // alert("Checkout failed");
   }
 };
-  /* -------- Cash on delivery: create the order directly -------- */
 
-  const handleCashOrder = async (payload: OrderPayload) => {
-    setSubmitting(true);
-    try {
-      const res = await fetch("/api/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to place your order.");
-      if (res.ok) window.location.href = `/checkout/success?orderId=${data.orderId}`;
-    } catch (err: any) {
-      setApiError(err.message || "Something went wrong. Please try again.");
-      setSubmitting(false);
-    }
-  };
 
-  /* -------- Stripe: create a Checkout Session, redirect to Stripe -------- */
 
-  const handleStripePayment = async (payload: OrderPayload) => {
-    setSubmitting(true);
-    try {
-      const res = await fetch("/api/stripe/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to start card payment.");
-      window.location.href = data.url; // Stripe-hosted checkout page
-    } catch (err: any) {
-      setApiError(err.message || "Card payment could not be started.");
-      setSubmitting(false);
-    }
-  };
 
   /* -------- PayPal: create order, redirect to approval URL -------- */
 
