@@ -11,7 +11,7 @@ import {
   type OrderStatus,
   type PaymentStatus,
 } from "@/app/admin/lib/orders";
-import OrderSlip, { printSlip } from "./OrderSlip.js";
+import OrderSlip, { printSlip } from "./OrderSlip";
 
 interface OrderItem {
   id: number;
