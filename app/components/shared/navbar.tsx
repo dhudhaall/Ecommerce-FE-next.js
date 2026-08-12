@@ -26,9 +26,9 @@ export default function Navbar() {
 
 
   return (
-    <div className="topbar flex justify-between items-center px-10 py-5 bg-white shadow-sm">
+    <div className="topbar flex justify-between items-center px-10 py-2 bg-white shadow-sm">
       {/* Logo */}
-      <h1 className="logo text-2xl font-bold">🍽️ Foodie</h1>
+      <a className="logo text-2xl font-bold"><img src="/images/web-logo.avif"></img></a>
 
       {/* Links */}
       <div className="space-x-6 navbar hidden md:flex">

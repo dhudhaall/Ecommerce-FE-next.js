@@ -1,29 +1,7 @@
-// import Image from "next/image";
-// import PostalSelection from "./components/homepage/postalSelection";
-// import AboutSection from "./components/homepage/about-section";
-// import ContactInfo from "./components/homepage/contact-info-section";
-// import Banner from "./components/homepage/banner";
-
-// export default function Home() {
-//   return (
-//     <div className="home-wrapper">
-//       <Banner/>
-//       <PostalSelection />
-//       <AboutSection />
-//       <ContactInfo />
-     
-//     </div>
-//   );
-// }
-
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-
-
-/* ---------------- Types (match GET /delivery-zones response) ----------------
- * { zones: [{ id, mainPostalCode, areaName, city, deliveryFee, minOrder, coveredPrefixes }] }
- */
+import "./globals.css";
 
 interface Zone {
   id: number;
@@ -146,7 +124,7 @@ export default function Home() {
 
     if (selectedZone) {
       // Hand the chosen zone to the menu/checkout flow
-      window.location.href = `/products`;
+      window.location.href = `/products?zoneId=${selectedZone.id}`;
       return;
     }
 
@@ -263,6 +241,71 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ---------------- PIZZA DELIVERY ---------------- */}
+      <section className="hm-pizza">
+        <div className="hm-pizza-inner">
+          <div className="hm-pizza-copy">
+            <p className="hm-kicker">Straight from the stone oven</p>
+            <h2>
+              Hot pizza at your door
+              <br />
+              in 30 minutes.
+            </h2>
+            <p className="hm-pizza-lead">
+              Hand-stretched dough proved for 48 hours, San Marzano tomatoes, and fior di latte —
+              baked at 400°C and boxed the moment it leaves the oven, so it reaches you with the
+              crust still crackling.
+            </p>
+
+            <ul className="hm-pizza-points">
+              <li>
+                <span className="hm-point-ic">🔥</span>
+                <div>
+                  <strong>Baked to order</strong>
+                  <span>Nothing sits under a heat lamp — we fire it when you order.</span>
+                </div>
+              </li>
+              <li>
+                <span className="hm-point-ic">🛵</span>
+                <div>
+                  <strong>Insulated delivery</strong>
+                  <span>Thermal bags keep it oven-hot the whole way to your door.</span>
+                </div>
+              </li>
+              <li>
+                <span className="hm-point-ic">🌿</span>
+                <div>
+                  <strong>Fresh toppings daily</strong>
+                  <span>Produce delivered each morning, never frozen.</span>
+                </div>
+              </li>
+            </ul>
+
+            <a href="/menu" className="hm-pizza-cta">
+              See the pizza menu →
+            </a>
+          </div>
+
+          <div className="hm-pizza-visual" aria-hidden>
+            <div className="hm-pizza-disc">
+              <span className="hm-pizza-emoji">🍕</span>
+            </div>
+            <div className="hm-pizza-chip chip-1">
+              <strong>30 min</strong>
+              <span>avg. delivery</span>
+            </div>
+            <div className="hm-pizza-chip chip-2">
+              <strong>400°C</strong>
+              <span>stone oven</span>
+            </div>
+            <div className="hm-pizza-chip chip-3">
+              <strong>48h</strong>
+              <span>proved dough</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ---------------- HOW TO ORDER ---------------- */}
       <section className="hm-how">
         <p className="hm-how-kicker">How to order</p>
@@ -286,6 +329,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+   
     </main>
   );
 }
