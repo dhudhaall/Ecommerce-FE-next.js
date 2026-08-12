@@ -236,7 +236,7 @@ export default function Home() {
             <span className="hm-plate-emoji">🍕</span>
           </div>
           <div className="hm-wordmark">
-            verd<span>ora</span>.
+            Pizzeria <span>Con Amore</span>.
           </div>
         </div>
       </section>

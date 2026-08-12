@@ -5,7 +5,7 @@ import { useState } from "react";
 /* ---------------- Store details — edit these in one place ---------------- */
 
 const STORE = {
-  name: "Verdora",
+  name: " Pizzeria Con Amore",
   address: "123 Main Street",
   postalCode: "10115",
   city: "Berlin",

@@ -6,9 +6,9 @@ export default function Footer() {
           {/* Brand */}
           <div className="hm-foot-brand">
             <div className="hm-foot-logo">
-              <span className="hm-foot-mark">🍽️</span>
+              <span className="hm-foot-mark"><img src="/images//web-logo.avif"></img></span>
               <span className="hm-foot-name">
-                verd<span>ora</span>.
+                Pizzeria <span>Con Amore</span>.
               </span>
             </div>
             <p className="hm-foot-tag">
@@ -36,7 +36,7 @@ export default function Footer() {
               </li>
               <li>
                 <span className="hm-foot-ic">✉️</span>
-                <a href="mailto:hello@verdora.com">hello@verdora.com</a>
+                <a href="mailto:hello@pizzeriaConAmore.com">hello@pizzeriaConAmore.com</a>
               </li>
               <li>
                 <span className="hm-foot-ic">📞</span>
@@ -76,7 +76,7 @@ export default function Footer() {
         </div>
 
         <div className="hm-foot-bottom">
-          <span>© {new Date().getFullYear()} Verdora. All rights reserved.</span>
+          <span>© {new Date().getFullYear()} Pizzeria Con Amore. All rights reserved.</span>
           <div className="hm-foot-legal">
             <a href="/imprint">Imprint</a>
             <a href="/privacy">Privacy</a>

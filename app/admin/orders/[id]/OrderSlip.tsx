@@ -31,7 +31,7 @@ interface OrderDetail {
 
 type SlipType = "kitchen" | "customer";
 
-const STORE_NAME = "Verdora";
+const STORE_NAME = " Pizzeria Con Amore.";
 const STORE_PHONE = "+49 000 000000"; // TODO: your store phone
 const STORE_ADDR = "Your street, City"; // TODO: your store address
 
