@@ -1,9 +1,7 @@
 import CategoryTabs from "../components/products/categorytabs";
 
 async function getCategories() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_baseURL}/categories`, {
-    cache: "no-store"
-  });
+  const res = await fetch(`${process.env.NEXT_PUBLIC_baseURL}/categories`);
 
   return res.json();
 }

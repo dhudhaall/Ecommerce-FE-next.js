@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 import { api } from "@/app/admin/lib/adminApi";
 import {
   STATUS_FLOW,
@@ -12,7 +11,7 @@ import {
   type PaymentStatus,
 } from "@/app/admin/lib/orders";
 import OrderSlip, { printSlip } from "./OrderSlip";
-
+import { useSearchParams, useRouter } from "next/navigation";
 interface OrderItem {
   id: number;
   productId: number;
@@ -38,8 +37,16 @@ interface OrderDetail {
   createdAt: string;
 }
 
-export default function OrderDetailPage() {
-  const { id } = useParams<{ id: string }>();
+export default function Page() {
+  return (
+    <Suspense fallback={<div>Loading…</div>}>
+      <OrderDetailPage />
+    </Suspense>
+  );
+}
+
+ function OrderDetailPage() {
+ const id = useSearchParams().get("id");
   const router = useRouter();
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -270,6 +277,9 @@ export default function OrderDetailPage() {
     </div>
   );
 }
+
+
+
 
 function PrintIcon() {
   return (
