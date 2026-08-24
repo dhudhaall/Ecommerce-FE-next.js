@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { api, setSession, getToken } from "@/app/admin/lib/adminApi";
+import { api, setSession, getToken } from "@/app/[locale]/admin/lib/adminApi";
 
 export default function AdminLogin() {
   const [email, setEmail] = useState("");

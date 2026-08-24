@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { api } from "./../lib/adminApi";
+import { api } from "../lib/adminApi";
 import {
   STATUS_TABS,
   STATUS_LABEL,
@@ -10,7 +10,7 @@ import {
   timeAgo,
   type OrderStatus,
   type PaymentStatus,
-} from "@/app/admin/lib/orders";
+} from "@/app/[locale]/admin/lib/orders";
 
 interface OrderRow {
   id: number;

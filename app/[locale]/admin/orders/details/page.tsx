@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
-import { api } from "@/app/admin/lib/adminApi";
+import { api } from "@/app/[locale]/admin/lib/adminApi";
 import {
   STATUS_FLOW,
   STATUS_LABEL,
@@ -9,7 +9,7 @@ import {
   money,
   type OrderStatus,
   type PaymentStatus,
-} from "@/app/admin/lib/orders";
+} from "@/app/[locale]/admin/lib/orders";
 import OrderSlip, { printSlip } from "./OrderSlip";
 import { useSearchParams, useRouter } from "next/navigation";
 interface OrderItem {

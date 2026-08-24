@@ -1,6 +1,6 @@
 "use client";
 
-import { money, STATUS_LABEL, type OrderStatus, type PaymentStatus } from "@/app/admin/lib/orders";
+import { money, STATUS_LABEL, type OrderStatus, type PaymentStatus } from "@/app/[locale]/admin/lib/orders";
 
 /* ---------------- Types (mirror the detail page) ---------------- */
 

@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+import "../globals.css";
 import Navbar from "./components/shared/navbar";
 import Footer from "./components/shared/footer";
 import "@/public/font-awesome/font-awesome.min.css";
-
+import {NextIntlClientProvider} from 'next-intl';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -12,7 +12,7 @@ const geistSans = Geist({
 });
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+  variable: "--font-geist-mono"
   subsets: ["latin"],
 });
 

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { getAdmin, getToken, logout } from "@/app/admin/lib/adminApi";
+import { getAdmin, getToken, logout } from "@/app/[locale]/admin/lib/adminApi";
 import "./admin.css";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

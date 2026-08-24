@@ -40,7 +40,7 @@ export function StripeCardSection({ grandTotal, validateForm, buildPayload }: St
       
       const data = await res.json();
       const orderId =
-  data.orderId ?? data.orderID ?? data.order_id ?? data.id ?? data.order?.id;
+  data.orderId ?? data.orderId ?? data.order_id ?? data.id ?? data.order?.id;
       
         if(res.ok){
             localStorage.removeItem('cart');

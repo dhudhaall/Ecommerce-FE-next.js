@@ -301,7 +301,7 @@ const handlePayNow = async () => {
     // 💵 CASH
     if (payload.paymentMethod === "cash") {
       
-      router.push(`/success?orderId=$${data.id}`);
+      router.push(`/success?orderId=$${data.orderId}`);
       return;
     }
 
