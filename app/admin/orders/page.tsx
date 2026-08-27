@@ -19,7 +19,7 @@ interface OrderRow {
   deliveryType: string;
   city: string | null;
   itemCount: number;
-  itemsPreview: string[];
+  items: any[];
   totalAmount: number;
   currency: string;
   paymentMethod: string;
@@ -175,7 +175,7 @@ export default function OrdersPage() {
             <div
               key={o.id}
               className="ad-tr ad-row"
-              onClick={() => router.push(`/admin/orders/${o.id}`)}
+              onClick={() => router.push(`/admin/orders/details?id=${o.id}`)}
               role="button"
             >
               <span className="ad-cell-id">
@@ -187,8 +187,8 @@ export default function OrdersPage() {
                 <em className="ad-muted">{o.deliveryType === "pickup" ? "Pickup" : o.city || "Delivery"}</em>
               </span>
               <span className="ad-cell-items">
-                {o.itemsPreview?.slice(0, 2).join(", ")}
-                {o.itemsPreview?.length > 2 ? ` +${o.itemsPreview?.length - 2}` : ""}
+               {o.items?.slice(0, 2).map((item) => item?.name).join(", ")}
+                {o.items?.length > 2 ? ` +${o.items.length - 2}` : ""}
               </span>
               <span className="ad-cell-total">{money(o.totalAmount, o.currency)}</span>
               <span>
