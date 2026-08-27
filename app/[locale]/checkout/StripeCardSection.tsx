@@ -40,7 +40,11 @@ export function StripeCardSection({ grandTotal, validateForm, buildPayload }: St
       
       const data = await res.json();
       const orderId =
+<<<<<<< HEAD:app/[locale]/checkout/StripeCardSection.tsx
   data.orderId ?? data.orderId ?? data.order_id ?? data.id ?? data.order?.id;
+=======
+  data.orderId ?? data?.data?.id;
+>>>>>>> main:app/checkout/StripeCardSection.tsx
       
         if(res.ok){
             localStorage.removeItem('cart');

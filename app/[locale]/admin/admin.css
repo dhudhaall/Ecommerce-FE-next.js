@@ -1817,3 +1817,80 @@
     margin: 0;
   }
 }
+/* ============================================================
+   Thermal slip printing
+   DELETE any older @media print rules that hide the admin shell.
+   ============================================================ */
+
+.slip-print-root { display: none; }
+
+@media print {
+  @page { size: 80mm auto; margin: 0; }
+
+  html, body {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    background: #fff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Hide everything except the slip. The :not(.slip) keeps this correct
+     inside the iframe fallback, where slips are direct body children. */
+  body > *:not(.slip-print-root):not(.slip) { display: none !important; }
+
+  .slip-print-root { display: block !important; }
+
+  body[data-print-slip="kitchen"]  .slip-customer { display: none !important; }
+  body[data-print-slip="customer"] .slip-kitchen  { display: none !important; }
+
+  /* ---- Slip body ---- */
+
+  .slip {
+    display: block;
+    width: 72mm;
+    padding: 4mm 2mm;
+    font-family: ui-monospace, "Courier New", Courier, monospace;
+    font-size: 12px;
+    line-height: 1.35;
+    color: #000;
+    background: #fff;
+    break-after: page;
+    page-break-after: always;
+  }
+  .slip:last-child { break-after: auto; page-break-after: auto; }
+
+  .slip-head { text-align: center; }
+  .slip-store { font-size: 16px; font-weight: 700; letter-spacing: .5px; }
+  .slip-tag { margin-top: 2px; font-size: 11px; letter-spacing: 2px; }
+
+  .slip-line { border-top: 1px solid #000; margin: 6px 0; }
+  .slip-line.dashed { border-top-style: dashed; }
+
+  .slip-order-no { font-size: 18px; font-weight: 700; text-align: center; }
+  .slip-row-sm { display: flex; justify-content: space-between; font-size: 11px; margin-top: 2px; }
+  .slip-type-badge { margin-top: 4px; text-align: center; font-weight: 700; letter-spacing: 1px; }
+
+  .slip-item { margin-bottom: 6px; }
+  .slip-item-top { display: flex; gap: 6px; font-weight: 700; }
+  .slip-qty { flex: 0 0 auto; }
+  .slip-name { flex: 1 1 auto; }
+  .slip-price { flex: 0 0 auto; }
+  .slip-sub { padding-left: 18px; font-size: 11px; }
+  .slip-note { padding-left: 18px; font-size: 11px; font-weight: 700; }
+
+  .slip-row { display: flex; justify-content: space-between; }
+  .slip-row.grand { font-size: 15px; font-weight: 700; margin-top: 4px; }
+  .slip-row.pay { font-size: 11px; margin-top: 4px; }
+
+  .slip-cust-name { font-weight: 700; }
+
+  .slip-note-label { font-weight: 700; letter-spacing: 1px; }
+  .slip-order-note { font-weight: 700; }
+
+  .slip-foot { text-align: center; font-size: 11px; }
+  .slip-thanks { margin-top: 4px; font-weight: 700; }
+
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}

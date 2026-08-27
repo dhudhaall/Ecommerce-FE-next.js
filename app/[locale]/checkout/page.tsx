@@ -108,7 +108,7 @@ export default function Checkout() {
   const fetchCart = async () => {
     setCartLoading(true);
      const stored = JSON.parse(localStorage.getItem("cart") || "[]");
-     console.log("stored",stored);
+
      const payload = {
         items: stored?.map((item:CartItem) => ({
             productId: item.productId,
@@ -133,7 +133,7 @@ export default function Checkout() {
    
       if (!res.ok) throw new Error(`Failed to load cart (${res.status})`);
       const data: Cart = await res.json();
-      console.log("data",data);
+     
        if (data?.items?.length == 0) throw new Error(`Your Cart is Empty. Please add items to cart first.`);
       setCart(data);
     } catch (err: any) {
@@ -289,6 +289,7 @@ const handlePayNow = async () => {
     );
 
     const data = await res.json();
+    console.log("data", data);
    
     if(data.success){
         localStorage.removeItem('cart');
@@ -301,7 +302,7 @@ const handlePayNow = async () => {
     // 💵 CASH
     if (payload.paymentMethod === "cash") {
       
-      router.push(`/success?orderId=$${data.orderId}`);
+      router.push(`/success?orderId=${data.orderId}`);
       return;
     }
 
@@ -542,9 +543,9 @@ const handlePayNow = async () => {
                   <div className="co-item" key={`${item.product.id}-${item.size?.id ?? 0}-${i}`}>
                     <div className="co-item-meta">
                       <div className="co-thumb">
-                        {item.product.image ? (
+                        {item?.product.image ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={item.product.image} alt={item.product.name} />
+                          <img src={process.env.NEXT_PUBLIC_baseURL_images+item.product.image} alt={item.product.name} />
                         ) : (
                           <span aria-hidden>🍽️</span>
                         )}

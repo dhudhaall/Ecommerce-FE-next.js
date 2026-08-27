@@ -7,8 +7,9 @@ import { getAdmin, getToken, logout } from "@/app/[locale]/admin/lib/adminApi";
 import "./admin.css";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  const isLogin = pathname === "/admin/login";
+  const rawPath = usePathname();
+const pathname = (rawPath || "/").replace(/\/+$/, "") || "/";
+const isLogin = pathname === "/admin/login";
   const [ready, setReady] = useState(false);
   const [adminName, setAdminName] = useState("");
 
@@ -42,7 +43,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="ad-shell">
       <aside className="ad-sidebar">
         <div className="ad-brand">
-          verd<span>ora</span>. <em>admin</em>
+          Pizzaria<span>Con Amore</span>. <em>admin</em>
         </div>
         <nav className="ad-nav">
           <Link href="/admin/orders" className={`ad-nav-item ${pathname.startsWith("/admin/orders") ? "active" : ""}`}>

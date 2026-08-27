@@ -39,7 +39,7 @@ export default function AdminLogin() {
     <div className="ad-login">
       <div className="ad-login-card">
         <div className="ad-brand center">
-          verd<span>ora</span>. <em>admin</em>
+          Pizzaria<span> Con Amore</span>. <em>admin</em>
         </div>
         <p className="ad-login-sub">Sign in to manage orders</p>
 

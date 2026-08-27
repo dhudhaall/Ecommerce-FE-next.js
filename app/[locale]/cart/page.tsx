@@ -7,18 +7,18 @@ import { useRouter } from "next/navigation";
 type Addon = { id?: string | number; name?: string; price?: number };
 type CartItem = {
   productId?: string | number;
-  product?: { name?: string; images?: { url?: string }[] };
+  product?: { name?: string; images?:any | null, price:number };
   size?: { name?: string };
   addons?: Addon[];
   quantity?: number;
-  totalPrice?: number;
+  itemTotal?: number;
 };
 type Pricing = {
   subtotal: number;
   delivery?: number;
   tax?: number;
   discount?: number;
-  total: number;
+  totalAmount: number;
 };
 
 /**
@@ -29,7 +29,7 @@ type Pricing = {
  *
  * >>> TODO: replace with your real route + request/response shape <<<
  */
-const PRICING_ENDPOINT = "/api/cart/price";
+const PRICING_ENDPOINT = `${process.env.NEXT_PUBLIC_baseURL}/checkout/summary`;
 const ENABLE_SERVER_PRICING = true; // flip to false until the route exists
 
 const euro = (n: number) => `€${(Number.isFinite(n) ? n : 0).toFixed(2)}`;
@@ -60,7 +60,7 @@ export default function CartPage() {
 
   /* Instant, client-side subtotal — NaN-safe, always correct (incl. empty = 0) */
   const subtotal = useMemo(
-    () => round2(cart.reduce((sum, it) => sum + (Number(it?.totalPrice) || 0), 0)),
+    () => round2(cart.reduce((sum, it) => sum + (Number(it?.itemTotal) || 0), 0)),
     [cart]
   );
 
@@ -90,13 +90,15 @@ export default function CartPage() {
       });
       if (!res.ok) throw new Error(`Pricing failed (${res.status})`);
       const data = await res.json();
+     
       setPricing({
         subtotal: Number(data.subtotal),
         delivery: data.delivery != null ? Number(data.delivery) : undefined,
         tax: data.tax != null ? Number(data.tax) : undefined,
         discount: data.discount != null ? Number(data.discount) : undefined,
-        total: Number(data.total),
+        totalAmount: Number(data.totalAmount),
       });
+    
     } catch (err) {
       if ((err as Error).name !== "AbortError") setPricing(null); // graceful fallback
     } finally {
@@ -107,7 +109,7 @@ export default function CartPage() {
   /* Per-unit price derived from stored total (totalPrice already includes qty) */
   const unitPrice = (item: CartItem) => {
     const q = Number(item?.quantity) || 1;
-    const tp = Number(item?.totalPrice) || 0;
+    const tp = Number(item?.itemTotal) || 0;
     return q > 0 ? tp / q : tp;
   };
 
@@ -127,7 +129,7 @@ export default function CartPage() {
     //  window.dispatchEvent(new Event("cartUpdated"));
   const count = cart.reduce((n, it) => n + (Number(it?.quantity) || 1), 0);
   const displayTotal =
-    pricing && Number.isFinite(pricing.total) ? pricing.total : subtotal;
+    pricing && Number.isFinite(pricing.totalAmount) ? pricing.totalAmount : subtotal;
 
   return (
     <main className="cart-page">
@@ -181,7 +183,7 @@ export default function CartPage() {
                         </div>
                       )}
 
-                      <div className="cart-price">{euro(Number(item?.totalPrice) || 0)}</div>
+                      <div className="cart-price">{euro(Number(item?.product?.price) || 0)}</div>
                     </div>
 
                     <div className="cart-actions">

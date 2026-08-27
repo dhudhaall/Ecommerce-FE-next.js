@@ -9,8 +9,8 @@ import {
   money,
   type OrderStatus,
   type PaymentStatus,
-} from "@/app/[locale]/admin/lib/orders";
-import OrderSlip, { printSlip } from "./OrderSlip";
+} from "../../lib/orders";
+import { printSlip } from "./OrderSlip";
 import { useSearchParams, useRouter } from "next/navigation";
 interface OrderItem {
   id: number;
@@ -129,10 +129,10 @@ export default function Page() {
         </div>
         <div className="ad-detail-head-right">
         <div className="ad-print-group">
-            <button type="button" className="ad-btn ghost" onClick={() => printSlip("kitchen")}>
+            <button type="button" className="ad-btn ghost" onClick={() => printSlip(order, "kitchen")}>
               <PrintIcon /> Kitchen slip
             </button>
-            <button type="button" className="ad-btn ghost" onClick={() => printSlip("customer")}>
+            <button type="button" className="ad-btn ghost" onClick={() => printSlip(order, "customer")}>
               <PrintIcon /> Customer receipt
             </button>
           </div>
