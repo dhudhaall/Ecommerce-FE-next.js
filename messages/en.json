@@ -1,0 +1,13 @@
+{
+  "Navbar": {
+    "home": "Home",
+    "products": "Products",
+    "about": "About",
+    "contact": "Contact"
+  },
+  "HomePage": {
+    "title_1": "Order food",
+    "title_2": "and more",
+    "sub_title": "Fresh from our kitchen, delivered to your area"
+  }
+}

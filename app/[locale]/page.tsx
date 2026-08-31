@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import "./globals.css";
+import "../globals.css";
+import { useTranslations } from "next-intl";
+
 
 interface Zone {
   id: number;
@@ -33,7 +35,8 @@ export default function Home() {
   const [zones, setZones] = useState<Zone[]>([]);
   const [zonesLoading, setZonesLoading] = useState(true);
   const [zonesError, setZonesError] = useState("");
-
+ const translation = useTranslations("HomePage");
+ 
   // Search state
   const [query, setQuery] = useState("");
   const [selectedZone, setSelectedZone] = useState<Zone | null>(null);
@@ -148,11 +151,11 @@ export default function Home() {
         {/* Left: headline + search */}
         <div className="hm-hero-left">
           <h1>
-            Order food
+            {translation("title_1")}
             <br />
-            and more
+           {translation("title_2")}
           </h1>
-          <p className="hm-sub">Fresh from our kitchen, delivered to your area</p>
+          <p className="hm-sub">{translation("sub_title")}</p>
 
           <div className="hm-search" ref={boxRef}>
             <div className={`hm-search-bar ${error ? "invalid" : ""}`}>
