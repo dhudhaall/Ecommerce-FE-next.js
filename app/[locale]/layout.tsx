@@ -43,11 +43,11 @@ export default async function RootLayout({
   if (!routing.locales.includes(locale as "en" | "de")) {
     notFound();
   }
-  const messages = (
-  await import(`../../messages/${locale}.json`)
-  ).default;
+  // const messages = (
+  // await import(`../../messages/${locale}.json`)
+  // ).default;
 
-  // const messages = await getMessages();
+  const messages = await getMessages();
 
   return (
     <html
