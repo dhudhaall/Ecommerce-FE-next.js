@@ -223,7 +223,13 @@ export default function CartPage() {
             <aside className="cart-summary" aria-label="Order summary">
               <h2 className="summary-title">Order summary</h2>
 
-              <div className="summary-row">
+            {pricingLoading && (
+              <div className="co-cart-state">
+                <span className="co-spinner" /> Loading your order…
+              </div>
+            )}
+
+             {pricing && !pricingLoading &&  <><div className="summary-row">
                 <span>Subtotal</span>
                 <span>{euro(pricing?.subtotal ?? subtotal)}</span>
               </div>
@@ -265,6 +271,7 @@ export default function CartPage() {
               {!pricing && (
                 <p className="summary-note">Taxes &amp; delivery calculated at checkout.</p>
               )}
+            </>}
             </aside>
           </div>
         )}
