@@ -5,7 +5,7 @@ const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 
 const nextConfig: NextConfig = {
   trailingSlash: true,
-  // output: "export",
+  output: "standalone",
   images: {
     unoptimized: true,
   },

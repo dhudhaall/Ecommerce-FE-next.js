@@ -1,3 +1,4 @@
+"use client";
 
 export default function About() {
   return (
@@ -26,7 +27,7 @@ export default function About() {
           </p>
         </div>
 
-        <img
+        <img key={5}
           src="/food1.png"
           className="rounded-lg shadow-lg"
           alt="food"
@@ -40,9 +41,9 @@ export default function About() {
         </h2>
 
         <div className="grid md:grid-cols-3 gap-6">
-          <img src="/food1.png" className="rounded-lg" />
-          <img src="/food2.png" className="rounded-lg" />
-          <img src="/food3.png" className="rounded-lg" />
+          <img key={1} src="/food1.png" className="rounded-lg" />
+          <img  key={2}  src="/food2.png" className="rounded-lg" />
+          <img  key={3}  src="/food3.png" className="rounded-lg" />
         </div>
       </div>
 
