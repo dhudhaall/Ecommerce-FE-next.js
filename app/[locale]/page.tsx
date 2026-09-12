@@ -4,7 +4,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import "../globals.css";
 import { useTranslations } from "next-intl";
 
-
 interface Zone {
   id: number;
   mainPostalCode: string;
@@ -12,14 +11,17 @@ interface Zone {
   city: string;
   deliveryFee: number;
   minOrder: number;
-  coveredPrefixes: string[]; // Json column — array of postal prefixes, e.g. ["5466"]
+  coveredPrefixes: string[];
 }
 
 /* Same matching logic as the checkout / backend:
- * exact main code, or the typed code starts with a covered prefix. */
+ * exact main code, or the typed code starts with a covered prefix.
+ */
 function matchZone(zones: Zone[], typedCode: string): Zone | null {
   const code = (typedCode || "").trim();
+
   if (code.length < 3) return null;
+
   return (
     zones.find(
       (z) =>
@@ -31,17 +33,19 @@ function matchZone(zones: Zone[], typedCode: string): Zone | null {
 }
 
 export default function Home() {
+  const translation = useTranslations("HomePage");
+
   // Zones from API
   const [zones, setZones] = useState<Zone[]>([]);
   const [zonesLoading, setZonesLoading] = useState(true);
   const [zonesError, setZonesError] = useState("");
- const translation = useTranslations("HomePage");
- 
+
   // Search state
   const [query, setQuery] = useState("");
   const [selectedZone, setSelectedZone] = useState<Zone | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [error, setError] = useState("");
+
   const boxRef = useRef<HTMLDivElement>(null);
 
   /* -------- Fetch delivery zones from the API -------- */
@@ -53,53 +57,85 @@ export default function Home() {
   const fetchZones = async () => {
     setZonesLoading(true);
     setZonesError("");
+
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_baseURL}/delivery-zones`, {
-        cache: "no-store",
-      });
-      if (!res.ok) throw new Error(`Failed to load delivery areas (${res.status})`);
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_baseURL}/delivery-zones`,
+        {
+          cache: "no-store",
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error(
+          `Failed to load delivery areas (${res.status})`
+        );
+      }
+
       const data: { zones: Zone[] } = await res.json();
+
       setZones(data.zones ?? []);
     } catch (err: any) {
-      setZonesError(err.message || "Could not load delivery areas.");
+      setZonesError(
+        err.message || translation("search.error_loading")
+      );
     } finally {
       setZonesLoading(false);
     }
   };
 
-  /* -------- Close the dropdown on outside click -------- */
+  /* -------- Close dropdown on outside click -------- */
 
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
-      if (boxRef.current && !boxRef.current.contains(e.target as Node)) {
+      if (
+        boxRef.current &&
+        !boxRef.current.contains(e.target as Node)
+      ) {
         setDropdownOpen(false);
       }
     };
+
     document.addEventListener("mousedown", onClick);
-    return () => document.removeEventListener("mousedown", onClick);
+
+    return () => {
+      document.removeEventListener("mousedown", onClick);
+    };
   }, []);
 
   /* -------- Suggestions --------
-   * While typing: match by postal code (prefix logic) or by area/city name.
-   * Empty input: show all served areas. */
+   * While typing:
+   * - postal code
+   * - area name
+   * - city name
+   *
+   * Empty input:
+   * - show all served areas.
+   */
 
   const suggestions = useMemo(() => {
     const q = query.trim().toLowerCase();
+
     if (!q) return zones;
 
     const isNumeric = /^[0-9]+$/.test(q);
+
     if (isNumeric) {
       return zones.filter(
         (z) =>
           z.mainPostalCode.startsWith(q) ||
           q.startsWith(z.mainPostalCode) ||
           (Array.isArray(z.coveredPrefixes) &&
-            z.coveredPrefixes.some((p) => q.startsWith(p) || p.startsWith(q)))
+            z.coveredPrefixes.some(
+              (p) => q.startsWith(p) || p.startsWith(q)
+            ))
       );
     }
+
     return zones.filter(
       (z) =>
-        z.areaName.toLowerCase().includes(q) || z.city.toLowerCase().includes(q)
+        z.areaName.toLowerCase().includes(q) ||
+        z.city.toLowerCase().includes(q)
     );
   }, [zones, query]);
 
@@ -110,14 +146,19 @@ export default function Home() {
     setError("");
     setDropdownOpen(true);
 
-    // Auto-resolve street-level codes to their main area as the user types
+    // Auto-resolve street-level codes to their main area
     const matched = matchZone(zones, value);
+
     setSelectedZone(matched);
   };
 
   const handleSelectZone = (zone: Zone) => {
     setSelectedZone(zone);
-    setQuery(`${zone.areaName} — ${zone.mainPostalCode}`);
+
+    setQuery(
+      `${zone.areaName} — ${zone.mainPostalCode}`
+    );
+
     setError("");
     setDropdownOpen(false);
   };
@@ -126,18 +167,16 @@ export default function Home() {
     setDropdownOpen(false);
 
     if (selectedZone) {
-      // Hand the chosen zone to the menu/checkout flow
       window.location.href = `/products?zoneId=${selectedZone.id}`;
       return;
     }
 
     if (!query.trim()) {
-      setError("Please enter your postal code or pick your area.");
+      setError(translation("search.error_empty"));
       return;
     }
 
-    // Typed something, nothing matched
-    setError("Sorry, we don't deliver to this address yet.");
+    setError(translation("search.error_not_available"));
   };
 
   const money = (n: number) => `$${n.toFixed(2)}`;
@@ -146,194 +185,542 @@ export default function Home() {
 
   return (
     <main className="hm">
-      {/* ---------------- HERO ---------------- */}
+
+      {/* =====================================================
+          HERO
+      ===================================================== */}
+
       <section className="hm-hero">
+
         {/* Left: headline + search */}
+
         <div className="hm-hero-left">
+
           <h1>
             {translation("title_1")}
             <br />
-           {translation("title_2")}
+            {translation("title_2")}
           </h1>
-          <p className="hm-sub">{translation("sub_title")}</p>
 
-          <div className="hm-search" ref={boxRef}>
-            <div className={`hm-search-bar ${error ? "invalid" : ""}`}>
-              <svg className="hm-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+          <p className="hm-sub">
+            {translation("sub_title")}
+          </p>
+
+          <div
+            className="hm-search"
+            ref={boxRef}
+          >
+
+            <div
+              className={`hm-search-bar ${
+                error ? "invalid" : ""
+              }`}
+            >
+
+              {/* Location icon */}
+
+              <svg
+                className="hm-pin"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                aria-hidden="true"
+              >
                 <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 1 1 16 0Z" />
                 <circle cx="12" cy="10" r="3" />
               </svg>
+
+              {/* Search input */}
+
               <input
                 type="text"
-                placeholder={zonesLoading ? "Loading delivery areas…" : "Enter your postal code or area"}
+                placeholder={
+                  zonesLoading
+                    ? translation("search.loading")
+                    : translation("search.placeholder")
+                }
                 value={query}
                 disabled={zonesLoading}
-                onChange={(e) => handleInputChange(e.target.value)}
-                onFocus={() => setDropdownOpen(true)}
-                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                aria-label="Postal code or area"
+                onChange={(e) =>
+                  handleInputChange(e.target.value)
+                }
+                onFocus={() =>
+                  setDropdownOpen(true)
+                }
+                onKeyDown={(e) =>
+                  e.key === "Enter" && handleSearch()
+                }
+                aria-label={translation(
+                  "search.aria_label"
+                )}
                 aria-invalid={!!error}
               />
-              <button type="button" className="hm-search-btn" onClick={handleSearch} disabled={zonesLoading}>
-                Search
+
+              {/* Search button */}
+
+              <button
+                type="button"
+                className="hm-search-btn"
+                onClick={handleSearch}
+                disabled={zonesLoading}
+              >
+                {translation("search.button")}
               </button>
+
             </div>
 
-            {/* Dropdown */}
+            {/* =================================================
+                DROPDOWN
+            ================================================= */}
+
             {dropdownOpen && !zonesLoading && (
-              <div className="hm-dropdown" role="listbox">
+              <div
+                className="hm-dropdown"
+                role="listbox"
+              >
+
+                {/* API error */}
+
                 {zonesError ? (
                   <div className="hm-dd-state">
-                    <span>{zonesError}</span>
-                    <button type="button" className="hm-dd-retry" onClick={fetchZones}>
-                      Try again
+
+                    <span>
+                      {zonesError}
+                    </span>
+
+                    <button
+                      type="button"
+                      className="hm-dd-retry"
+                      onClick={fetchZones}
+                    >
+                      {translation(
+                        "search.try_again"
+                      )}
                     </button>
+
                   </div>
                 ) : suggestions.length > 0 ? (
                   <>
-                    <div className="hm-dd-label">We deliver to</div>
+
+                    <div className="hm-dd-label">
+                      {translation(
+                        "search.deliver_to"
+                      )}
+                    </div>
+
                     {suggestions.map((z) => (
                       <button
                         type="button"
                         key={z.id}
                         role="option"
-                        aria-selected={selectedZone?.id === z.id}
-                        className={`hm-dd-item ${selectedZone?.id === z.id ? "sel" : ""}`}
-                        onClick={() => handleSelectZone(z)}
+                        aria-selected={
+                          selectedZone?.id === z.id
+                        }
+                        className={`hm-dd-item ${
+                          selectedZone?.id === z.id
+                            ? "sel"
+                            : ""
+                        }`}
+                        onClick={() =>
+                          handleSelectZone(z)
+                        }
                       >
+
                         <span className="hm-dd-area">
+
                           {z.areaName}
+
                           <span className="hm-dd-city">
-                            {z.mainPostalCode} · {z.city}
+                            {z.mainPostalCode} ·{" "}
+                            {z.city}
                           </span>
+
                         </span>
-                        <span className="hm-dd-fee">{money(z.deliveryFee)} delivery</span>
+
+                        <span className="hm-dd-fee">
+                          {money(z.deliveryFee)}{" "}
+                          {translation(
+                            "search.delivery"
+                          )}
+                        </span>
+
                       </button>
                     ))}
+
                   </>
                 ) : (
-                  <div className="hm-dd-state">No matching area — try your postal code</div>
+                  <div className="hm-dd-state">
+                    {translation(
+                      "search.no_matching_area"
+                    )}
+                  </div>
                 )}
+
               </div>
             )}
 
-            {/* Feedback under the input */}
+            {/* =================================================
+                FEEDBACK
+            ================================================= */}
+
             {error && (
-              <p className="hm-error" role="alert">
+              <p
+                className="hm-error"
+                role="alert"
+              >
                 {error}
               </p>
             )}
+
             {!error && selectedZone && (
-              <p className="hm-ok">
-                ✓ Great — we deliver to {selectedZone.areaName} ({money(selectedZone.deliveryFee)} delivery
-                {selectedZone.minOrder > 0 ? `, min. order ${money(selectedZone.minOrder)}` : ""})
+              <p
+                className="hm-ok"
+                role="status"
+              >
+                ✓{" "}
+                {translation("search.success", {
+                  area: selectedZone.areaName,
+                  fee: money(
+                    selectedZone.deliveryFee
+                  ),
+                  minOrder:
+                    selectedZone.minOrder > 0
+                      ? translation(
+                          "search.min_order",
+                          {
+                            amount: money(
+                              selectedZone.minOrder
+                            ),
+                          }
+                        )
+                      : "",
+                })}
               </p>
             )}
+
           </div>
         </div>
 
-        {/* Right: visual panel */}
+        {/* =====================================================
+            HERO RIGHT
+        ===================================================== */}
+
         <div className="hm-hero-right">
-          <div className="hm-badge">Fresh · Local · Fast</div>
-          <div className="hm-plate" aria-hidden>
-            <span className="hm-plate-emoji">🍕</span>
+
+          <div className="hm-badge">
+            {translation("hero.badge")}
           </div>
+
+          <div
+            className="hm-plate"
+            aria-hidden="true"
+          >
+            <span className="hm-plate-emoji">
+              🍕
+            </span>
+          </div>
+
           <div className="hm-wordmark">
-            Pizzeria <span>Con Amore</span>.
+            Pizzeria{" "}
+            <span>Con Amore</span>.
           </div>
+
         </div>
+
       </section>
 
-      {/* ---------------- PIZZA DELIVERY ---------------- */}
+
+      {/* =====================================================
+          PIZZA DELIVERY
+      ===================================================== */}
+
       <section className="hm-pizza">
+
         <div className="hm-pizza-inner">
+
+          {/* Copy */}
+
           <div className="hm-pizza-copy">
-            <p className="hm-kicker">Straight from the stone oven</p>
-            <h2>
-              Hot pizza at your door
-              <br />
-              in 30 minutes.
-            </h2>
-            <p className="hm-pizza-lead">
-              Hand-stretched dough proved for 48 hours, San Marzano tomatoes, and fior di latte —
-              baked at 400°C and boxed the moment it leaves the oven, so it reaches you with the
-              crust still crackling.
+
+            <p className="hm-kicker">
+              {translation("pizza.kicker")}
             </p>
 
+            <h2>
+              {translation("pizza.title_1")}
+              <br />
+              {translation("pizza.title_2")}
+            </h2>
+
+            <p className="hm-pizza-lead">
+              {translation("pizza.lead")}
+            </p>
+
+            {/* Features */}
+
             <ul className="hm-pizza-points">
+
+              {/* Baked to order */}
+
               <li>
-                <span className="hm-point-ic">🔥</span>
+
+                <span className="hm-point-ic">
+                  🔥
+                </span>
+
                 <div>
-                  <strong>Baked to order</strong>
-                  <span>Nothing sits under a heat lamp — we fire it when you order.</span>
+
+                  <strong>
+                    {translation(
+                      "pizza.points.baked_to_order.title"
+                    )}
+                  </strong>
+
+                  <span>
+                    {translation(
+                      "pizza.points.baked_to_order.description"
+                    )}
+                  </span>
+
                 </div>
+
               </li>
+
+
+              {/* Insulated delivery */}
+
               <li>
-                <span className="hm-point-ic">🛵</span>
+
+                <span className="hm-point-ic">
+                  🛵
+                </span>
+
                 <div>
-                  <strong>Insulated delivery</strong>
-                  <span>Thermal bags keep it oven-hot the whole way to your door.</span>
+
+                  <strong>
+                    {translation(
+                      "pizza.points.insulated_delivery.title"
+                    )}
+                  </strong>
+
+                  <span>
+                    {translation(
+                      "pizza.points.insulated_delivery.description"
+                    )}
+                  </span>
+
                 </div>
+
               </li>
+
+
+              {/* Fresh toppings */}
+
               <li>
-                <span className="hm-point-ic">🌿</span>
+
+                <span className="hm-point-ic">
+                  🌿
+                </span>
+
                 <div>
-                  <strong>Fresh toppings daily</strong>
-                  <span>Produce delivered each morning, never frozen.</span>
+
+                  <strong>
+                    {translation(
+                      "pizza.points.fresh_toppings.title"
+                    )}
+                  </strong>
+
+                  <span>
+                    {translation(
+                      "pizza.points.fresh_toppings.description"
+                    )}
+                  </span>
+
                 </div>
+
               </li>
+
             </ul>
 
-            <a href="/menu" className="hm-pizza-cta">
-              See the pizza menu →
+            {/* CTA */}
+
+            <a
+              href="/menu"
+              className="hm-pizza-cta"
+            >
+              {translation("pizza.cta")}
             </a>
+
           </div>
 
-          <div className="hm-pizza-visual" aria-hidden>
+
+          {/* Visual */}
+
+          <div
+            className="hm-pizza-visual"
+            aria-hidden="true"
+          >
+
             <div className="hm-pizza-disc">
-              <span className="hm-pizza-emoji">🍕</span>
+
+              <span className="hm-pizza-emoji">
+                🍕
+              </span>
+
             </div>
+
+
+            {/* 30 minutes */}
+
             <div className="hm-pizza-chip chip-1">
-              <strong>30 min</strong>
-              <span>avg. delivery</span>
+
+              <strong>
+                30 min
+              </strong>
+
+              <span>
+                {translation(
+                  "pizza.stats.delivery_time"
+                )}
+              </span>
+
             </div>
+
+
+            {/* 400°C */}
+
             <div className="hm-pizza-chip chip-2">
-              <strong>400°C</strong>
-              <span>stone oven</span>
+
+              <strong>
+                400°C
+              </strong>
+
+              <span>
+                {translation(
+                  "pizza.stats.stone_oven"
+                )}
+              </span>
+
             </div>
+
+
+            {/* 48h */}
+
             <div className="hm-pizza-chip chip-3">
-              <strong>48h</strong>
-              <span>proved dough</span>
+
+              <strong>
+                48h
+              </strong>
+
+              <span>
+                {translation(
+                  "pizza.stats.proved_dough"
+                )}
+              </span>
+
             </div>
+
           </div>
+
         </div>
+
       </section>
 
-      {/* ---------------- HOW TO ORDER ---------------- */}
+
+      {/* =====================================================
+          HOW TO ORDER
+      ===================================================== */}
+
       <section className="hm-how">
-        <p className="hm-how-kicker">How to order</p>
-        <h2>It&apos;s as easy as this.</h2>
+
+        <p className="hm-how-kicker">
+          {translation(
+            "how_to_order.kicker"
+          )}
+        </p>
+
+        <h2>
+          {translation(
+            "how_to_order.title"
+          )}
+        </h2>
+
 
         <div className="hm-steps">
+
+          {/* Step 1 */}
+
           <div className="hm-step">
-            <div className="hm-step-num">1</div>
-            <h3>Find your area</h3>
-            <p>Enter your postal code and we&apos;ll check if you&apos;re in one of our delivery zones.</p>
+
+            <div className="hm-step-num">
+              1
+            </div>
+
+            <h3>
+              {translation(
+                "how_to_order.steps.find_area.title"
+              )}
+            </h3>
+
+            <p>
+              {translation(
+                "how_to_order.steps.find_area.description"
+              )}
+            </p>
+
           </div>
+
+
+          {/* Step 2 */}
+
           <div className="hm-step">
-            <div className="hm-step-num">2</div>
-            <h3>Pick your food</h3>
-            <p>Choose your dishes, sizes, and add-ons — everything is made fresh to order.</p>
+
+            <div className="hm-step-num">
+              2
+            </div>
+
+            <h3>
+              {translation(
+                "how_to_order.steps.pick_food.title"
+              )}
+            </h3>
+
+            <p>
+              {translation(
+                "how_to_order.steps.pick_food.description"
+              )}
+            </p>
+
           </div>
+
+
+          {/* Step 3 */}
+
           <div className="hm-step">
-            <div className="hm-step-num">3</div>
-            <h3>Pay your way</h3>
-            <p>Cash on delivery, card, or PayPal — then sit back while we bring it over.</p>
+
+            <div className="hm-step-num">
+              3
+            </div>
+
+            <h3>
+              {translation(
+                "how_to_order.steps.pay.title"
+              )}
+            </h3>
+
+            <p>
+              {translation(
+                "how_to_order.steps.pay.description"
+              )}
+            </p>
+
           </div>
+
         </div>
+
       </section>
 
-   
     </main>
   );
 }

@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-
+import { useTranslations } from "next-intl";
 export default function Navbar() {
   const [cart, setCart] = useState<any[]>([]);
-
+ const t = useTranslations("Navbar");
   const router = useRouter();
   const pathname = usePathname();
 
@@ -78,15 +78,15 @@ export default function Navbar() {
       <div className="space-x-6 navbar hidden md:flex">
 
         <Link href={`/${language}`}>
-          Home
+           {t("home")}
         </Link>
 
         <Link href={`/${language}/products`}>
-          Menu
+           {t("products")}
         </Link>
 
         <Link href={`/${language}/contact`}>
-          Contact
+           {t("contact")}
         </Link>
 
       </div>
@@ -129,7 +129,7 @@ export default function Navbar() {
             >
               <option value="en">English</option>
               <option value="de">Deutsch</option>
-              <option value="fr">Français</option>
+              {/* <option value="fr">Français</option> */}
             </select>
 
             <i className="

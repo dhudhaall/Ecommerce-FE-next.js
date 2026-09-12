@@ -1,14 +1,23 @@
 import CategoryTabs from "../components/products/categorytabs";
 
-async function getCategories() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_baseURL}/categories`);
+export async function getCategories() {
+  const url = `${process.env.NEXT_PUBLIC_baseURL}/categories`; // ← keep your real URL here
 
-  return res.json();
+  const res = await fetch(url, { cache: "no-store" });
+  const text = await res.text();
+
+  if (!res.ok || !res.headers.get("content-type")?.includes("json")) {
+   console.error("getCategories failed:", res.status, text.slice(0, 1500));
+    throw new Error(`Categories API returned ${res.status}`);
+  }
+
+  return JSON.parse(text);
 }
 
 export default async function Products() {
 
      const categories = await getCategories();
+     
 
   return (
     <>

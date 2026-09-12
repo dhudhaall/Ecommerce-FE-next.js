@@ -2,12 +2,21 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { loadStripe, type StripeElementsOptions } from "@stripe/stripe-js";
-import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
-import {StripeCardSection} from './StripeCardSection'
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+import { useTranslations } from "next-intl";
+import {
+  loadStripe,
+  type StripeElementsOptions,
+} from "@stripe/stripe-js";
+import {
+  Elements,
+} from "@stripe/react-stripe-js";
+import { StripeCardSection } from "./StripeCardSection";
 
-/* ---------------- Types (match the cart API response) ---------------- */
+const stripePromise = loadStripe(
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
+);
+
+/* ---------------- Types ---------------- */
 
 interface Product {
   id: number;
@@ -45,6 +54,7 @@ interface Cart {
 }
 
 type DeliveryType = "delivery" | "pickup";
+
 type PaymentMethod = "cash" | "card" | "paypal";
 
 interface FormState {
@@ -61,18 +71,18 @@ type FormErrors = Partial<Record<keyof FormState, string>>;
 
 const DELIVERY_FEE = 3;
 
-const PAYMENT_METHODS: { id: PaymentMethod; label: string; sub: string }[] = [
-  { id: "cash", label: "Cash on delivery", sub: "Pay when your order arrives" },
-  { id: "card", label: "Credit / Debit card", sub: "Visa, Mastercard, Amex — via Stripe" },
-  { id: "paypal", label: "PayPal", sub: "You'll be redirected to PayPal" },
-];
-
 /* ---------------- Component ---------------- */
 
 export default function Checkout() {
-  const [deliveryType, setDeliveryType] = useState<DeliveryType>("delivery");
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cash"); // Cash by default
-	const router = useRouter();
+  const t = useTranslations("CheckoutPage");
+
+  const router = useRouter();
+
+  const [deliveryType, setDeliveryType] =
+    useState<DeliveryType>("delivery");
+
+  const [paymentMethod, setPaymentMethod] =
+    useState<PaymentMethod>("cash");
 
   const [form, setForm] = useState<FormState>({
     firstName: "",
@@ -83,9 +93,10 @@ export default function Checkout() {
     city: "",
     postalCode: "",
   });
+
   const [errors, setErrors] = useState<FormErrors>({});
 
-  // Cart from API
+  // Cart
   const [cart, setCart] = useState<Cart | null>(null);
   const [cartLoading, setCartLoading] = useState(true);
   const [cartError, setCartError] = useState("");
@@ -93,13 +104,19 @@ export default function Checkout() {
   // Submission
   const [submitting, setSubmitting] = useState(false);
   const [apiError, setApiError] = useState("");
+
   const formRef = useRef<HTMLFormElement>(null);
 
   const totalAmount = cart?.totalAmount ?? 0;
-  const deliveryFee = deliveryType === "delivery" ? DELIVERY_FEE : 0;
+
+  const deliveryFee =
+    deliveryType === "delivery" ? DELIVERY_FEE : 0;
+
   const grandTotal = totalAmount + deliveryFee;
 
-  /* -------- Fetch order summary from API -------- */
+  /* =========================================================
+     Fetch order summary
+  ========================================================= */
 
   useEffect(() => {
     fetchCart();
@@ -107,76 +124,128 @@ export default function Checkout() {
 
   const fetchCart = async () => {
     setCartLoading(true);
-     const stored = JSON.parse(localStorage.getItem("cart") || "[]");
-
-     const payload = {
-        items: stored?.map((item:CartItem) => ({
-            productId: item.productId,
-            quantity: item.quantity,
-            size: item.size ? { id: item.size.id } : null,
-            addons: item.addons.map(a => a.id)
-        }))
-        };
     setCartError("");
+
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_baseURL}/checkout/summary`,
+      const stored = JSON.parse(
+        localStorage.getItem("cart") || "[]"
+      );
+
+      const payload = {
+        items: stored?.map((item: CartItem) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          size: item.size
+            ? {
+                id: item.size.id,
+              }
+            : null,
+          addons: item.addons.map((a) => a.id),
+        })),
+      };
+
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_baseURL}/checkout/summary`,
         {
-            method: "POST", 
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                ...payload
-            }),
-        cache: "no-store" 
-    });
-   
-      if (!res.ok) throw new Error(`Failed to load cart (${res.status})`);
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+          cache: "no-store",
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error(
+          `Failed to load cart (${res.status})`
+        );
+      }
+
       const data: Cart = await res.json();
-     
-       if (data?.items?.length == 0) throw new Error(`Your Cart is Empty. Please add items to cart first.`);
+
+      if (!data?.items?.length) {
+        throw new Error(
+          t("errors.cart_empty")
+        );
+      }
+
       setCart(data);
     } catch (err: any) {
-      setCartError(err.message || "Could not load your order.");
+      setCartError(
+        err.message || t("errors.could_not_load")
+      );
     } finally {
       setCartLoading(false);
     }
   };
 
-  /* -------- Validation -------- */
+  /* =========================================================
+     Validation
+  ========================================================= */
 
-  const validateField = (field: keyof FormState, value: string): string => {
+  const validateField = (
+    field: keyof FormState,
+    value: string
+  ): string => {
     const v = value.trim();
+
     const isPickup = deliveryType === "pickup";
+
     switch (field) {
       case "firstName":
-        return !v ? "First name is required" : v.length < 2 ? "Must be at least 2 characters" : "";
+        return !v
+          ? t("validation.first_name_required")
+          : v.length < 2
+          ? t("validation.min_2_chars")
+          : "";
+
       case "lastName":
-        return !v ? "Last name is required" : v.length < 2 ? "Must be at least 2 characters" : "";
+        return !v
+          ? t("validation.last_name_required")
+          : v.length < 2
+          ? t("validation.min_2_chars")
+          : "";
+
       case "phone":
         return !v
-          ? "Phone number is required"
+          ? t("validation.phone_required")
           : !/^\+?[0-9\s()-]{7,16}$/.test(v)
-          ? "Enter a valid phone number"
+          ? t("validation.phone_invalid")
           : "";
+
       case "email":
         return !v
-          ? "Email is required"
+          ? t("validation.email_required")
           : !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)
-          ? "Enter a valid email address"
+          ? t("validation.email_invalid")
           : "";
+
       case "address":
         if (isPickup) return "";
-        return !v ? "Address is required" : v.length < 5 ? "Enter a complete address" : "";
+
+        return !v
+          ? t("validation.address_required")
+          : v.length < 5
+          ? t("validation.address_invalid")
+          : "";
+
       case "city":
-        return isPickup ? "" : !v ? "City is required" : "";
+        return isPickup
+          ? ""
+          : !v
+          ? t("validation.city_required")
+          : "";
+
       case "postalCode":
         if (isPickup) return "";
+
         return !v
-          ? "Postal code is required"
+          ? t("validation.postal_required")
           : !/^[A-Za-z0-9 -]{3,10}$/.test(v)
-          ? "Enter a valid postal code"
+          ? t("validation.postal_invalid")
           : "";
+
       default:
         return "";
     }
@@ -184,41 +253,89 @@ export default function Checkout() {
 
   const validate = (): boolean => {
     const newErrors: FormErrors = {};
-    (Object.keys(form) as (keyof FormState)[]).forEach((field) => {
-      const message = validateField(field, form[field]);
-      if (message) newErrors[field] = message;
+
+    (
+      Object.keys(form) as (keyof FormState)[]
+    ).forEach((field) => {
+      const message = validateField(
+        field,
+        form[field]
+      );
+
+      if (message) {
+        newErrors[field] = message;
+      }
     });
+
     setErrors(newErrors);
 
-    // Scroll to & focus the first invalid field
+    // Scroll to first invalid field
     const firstInvalid = Object.keys(newErrors)[0];
+
     if (firstInvalid) {
-      const el = formRef.current?.querySelector<HTMLInputElement>(`input[name="${firstInvalid}"]`);
-      el?.scrollIntoView({ behavior: "smooth", block: "center" });
-      el?.focus({ preventScroll: true });
+      const el =
+        formRef.current?.querySelector<HTMLInputElement>(
+          `input[name="${firstInvalid}"]`
+        );
+
+      el?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+
+      el?.focus({
+        preventScroll: true,
+      });
     }
+
     return Object.keys(newErrors).length === 0;
   };
 
-  /* -------- Field handlers -------- */
+  /* =========================================================
+     Field handlers
+  ========================================================= */
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const { name, value } = e.target;
-    setForm((f) => ({ ...f, [name]: value }));
-    // Re-validate live once a field already has an error
-    if (errors[name as keyof FormState] !== undefined) {
-      setErrors((prev) => ({ ...prev, [name]: validateField(name as keyof FormState, value) }));
+
+    setForm((f) => ({
+      ...f,
+      [name]: value,
+    }));
+
+    // Revalidate if field already has an error
+    if (
+      errors[name as keyof FormState] !== undefined
+    ) {
+      setErrors((prev) => ({
+        ...prev,
+        [name]: validateField(
+          name as keyof FormState,
+          value
+        ),
+      }));
     }
   };
 
-  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+  const handleBlur = (
+    e: React.FocusEvent<HTMLInputElement>
+  ) => {
     const { name, value } = e.target;
-    setErrors((prev) => ({ ...prev, [name]: validateField(name as keyof FormState, value) }));
+
+    setErrors((prev) => ({
+      ...prev,
+      [name]: validateField(
+        name as keyof FormState,
+        value
+      ),
+    }));
   };
 
-
-
-  /* -------- Payload -------- */
+  /* =========================================================
+     Payload
+  ========================================================= */
 
   const buildPayload = () => ({
     customer: {
@@ -227,7 +344,9 @@ export default function Checkout() {
       phone: form.phone.trim(),
       email: form.email.trim().toLowerCase(),
     },
+
     deliveryType,
+
     shippingAddress:
       deliveryType === "delivery"
         ? {
@@ -236,201 +355,334 @@ export default function Checkout() {
             postalCode: form.postalCode.trim(),
           }
         : null,
+
     paymentMethod,
+
     items:
       cart?.items.map((item) => ({
         productId: item.product.id,
         quantity: item.quantity,
         sizeId: item.size?.id ?? null,
         addonIds: item.addons.map((a) => a.id),
-        // notes: item.notes?.trim() || null,
       })) ?? [],
+
     currency: "eur",
   });
 
-  type OrderPayload = ReturnType<typeof buildPayload>;
+  type OrderPayload = ReturnType<
+    typeof buildPayload
+  >;
 
-  /* -------- Pay now -------- */
+  /* =========================================================
+     Checkout
+  ========================================================= */
 
-//   const handlePayNow = () => {
-//     setApiError("");
-//     if (!validate()) return;
-//     if (!cart || cart.items.length === 0) {
-//       setApiError("Your cart is empty.");
-//       return;
-//     }
+  const handlePayNow = async () => {
+    setApiError("");
 
-//     const payload = buildPayload();
-//     console.log("ORDER PAYLOAD", payload);
+    if (!validate()) return;
 
-//     if (paymentMethod === "cash") {
-//       handleCashOrder(payload);
-//     } else if (paymentMethod === "card") {
-//       handleStripePayment(payload);
-//     } else {
-//       handlePaypalPayment(payload);
-//     }
-//   };
-
-const handlePayNow = async () => {
-     if (!validate()) return;
-  try {
-    const payload = buildPayload(); // your existing function
-
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_baseURL}/checkout`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
-      }
-    );
-
-    const data = await res.json();
-    console.log("data", data);
-   
-    if(data.success){
-        localStorage.removeItem('cart');
-    }
-    if(!data.success){
-        setCartError("Checkout Failed.");
-        return;
-    }
-
-    // 💵 CASH
-    if (payload.paymentMethod === "cash") {
-      
-      router.push(`/success?orderId=${data.orderId}`);
+    if (!cart || cart.items.length === 0) {
+      setApiError(t("errors.cart_empty"));
       return;
     }
 
-
-    // 🟡 PAYPAL
-    if (data.paymentType === "paypal") {
-      window.location.href = data.approvalUrl;
-    }
-
-  } catch (err) {
-    console.error(err);
-    // alert("Checkout failed");
-  }
-};
-
-
-
-
-  /* -------- PayPal: create order, redirect to approval URL -------- */
-
-  const handlePaypalPayment = async (payload: OrderPayload) => {
     setSubmitting(true);
+
     try {
-      const res = await fetch("/api/paypal/create-order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const payload = buildPayload();
+
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_baseURL}/checkout`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to start PayPal payment.");
-      window.location.href = data.approvalUrl; // PayPal approval page
-    } catch (err: any) {
-      setApiError(err.message || "PayPal payment could not be started.");
+
+      console.log("Checkout response:", data);
+
+      if (!data.success) {
+        setApiError(
+          data.message ||
+            t("errors.checkout_failed")
+        );
+
+        setSubmitting(false);
+        return;
+      }
+
+      localStorage.removeItem("cart");
+
+      /* ---------------- CASH ---------------- */
+
+      if (payload.paymentMethod === "cash") {
+        router.push(
+          `/success?orderId=${data.orderId}`
+        );
+
+        return;
+      }
+
+      /* ---------------- PAYPAL ---------------- */
+
+      if (data.paymentType === "paypal") {
+        window.location.href =
+          data.approvalUrl;
+
+        return;
+      }
+
+      setSubmitting(false);
+    } catch (err) {
+      console.error(err);
+
+      setApiError(
+        t("errors.checkout_failed")
+      );
+
       setSubmitting(false);
     }
   };
 
-   const stripeOptions: StripeElementsOptions = useMemo(
-    () => ({
-      mode: "payment",
-      amount: Math.max(Math.round(grandTotal * 100), 50), // cents; Stripe minimum ≥ $0.50
-      currency: "eur",
-      appearance: {
-        theme: "stripe",
-        variables: {
-          colorPrimary: "#1f5b3f",
-          colorText: "#17251d",
-          colorTextSecondary: "#6c7a70",
-          colorDanger: "#c0392b",
-          colorBackground: "#fbfcfa",
-          fontFamily: "Poppins, ui-sans-serif, system-ui, sans-serif",
-          borderRadius: "10px",
-          spacingUnit: "4px",
-        },
-        rules: {
-          ".Input": { border: "1.5px solid #dfe4dd", boxShadow: "none" },
-          ".Input:focus": {
-            border: "1.5px solid #1f5b3f",
-            boxShadow: "0 0 0 3px #e7f0e9",
-          },
-          ".Label": { fontSize: "12.5px", fontWeight: "500" },
-        },
-      },
-      fonts: [
+  /* =========================================================
+     PayPal
+  ========================================================= */
+
+  const handlePaypalPayment = async (
+    payload: OrderPayload
+  ) => {
+    setSubmitting(true);
+
+    try {
+      const res = await fetch(
+        "/api/paypal/create-order",
         {
-          cssSrc: "https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap",
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(
+          data.error ||
+            t("errors.payment_failed")
+        );
+      }
+
+      window.location.href =
+        data.approvalUrl;
+    } catch (err: any) {
+      setApiError(
+        err.message ||
+          t("errors.payment_failed")
+      );
+
+      setSubmitting(false);
+    }
+  };
+
+  /* =========================================================
+     Stripe
+  ========================================================= */
+
+  const stripeOptions: StripeElementsOptions =
+    useMemo(
+      () => ({
+        mode: "payment",
+
+        amount: Math.max(
+          Math.round(grandTotal * 100),
+          50
+        ),
+
+        currency: "eur",
+
+        appearance: {
+          theme: "stripe",
+
+          variables: {
+            colorPrimary: "#1f5b3f",
+            colorText: "#17251d",
+            colorTextSecondary: "#6c7a70",
+            colorDanger: "#c0392b",
+            colorBackground: "#fbfcfa",
+            fontFamily:
+              "Poppins, ui-sans-serif, system-ui, sans-serif",
+            borderRadius: "10px",
+            spacingUnit: "4px",
+          },
+
+          rules: {
+            ".Input": {
+              border:
+                "1.5px solid #dfe4dd",
+              boxShadow: "none",
+            },
+
+            ".Input:focus": {
+              border:
+                "1.5px solid #1f5b3f",
+              boxShadow:
+                "0 0 0 3px #e7f0e9",
+            },
+
+            ".Label": {
+              fontSize: "12.5px",
+              fontWeight: "500",
+            },
+          },
         },
-      ],
-    }),
-    [grandTotal]
-  );
- 
 
-  /* -------- Helpers -------- */
+        fonts: [
+          {
+            cssSrc:
+              "https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap",
+          },
+        ],
+      }),
+      [grandTotal]
+    );
 
-  const money = (n: number) => `$${n.toFixed(2)}`;
+  /* =========================================================
+     Helpers
+  ========================================================= */
+
+  const money = (n: number) =>
+    `€${n.toFixed(2)}`;
 
   const itemMeta = (item: CartItem) => {
     const parts: string[] = [];
-    if (item.size) parts.push(item.size.name);
-    if (item.addons.length) parts.push(item.addons.map((a) => a.name).join(", "));
+
+    if (item.size) {
+      parts.push(item.size.name);
+    }
+
+    if (item.addons.length) {
+      parts.push(
+        item.addons
+          .map((a) => a.name)
+          .join(", ")
+      );
+    }
+
     return parts.join(" · ");
   };
 
-  const showAddressFields = deliveryType === "delivery";
+  const showAddressFields =
+    deliveryType === "delivery";
 
-  /* -------- Render -------- */
+  /* =========================================================
+     Render
+  ========================================================= */
 
   return (
     <div className="co-page">
+
+      {/* ================= HEADER ================= */}
+
       <div className="co-head">
-        <h1>Checkout</h1>
-        <p>Almost there — fill in your details and choose how you&apos;d like to pay.</p>
+        <h1>{t("title")}</h1>
+
+        <p>
+          {t("subtitle")}
+        </p>
       </div>
 
       <div className="co-cols">
-        {/* ---------------- LEFT: FORM ---------------- */}
-        <form ref={formRef} className="co-panel" noValidate onSubmit={(e) => e.preventDefault()}>
-          {/* Delivery / Pickup tabs */}
-          <div className="co-tabs" role="tablist">
+
+        {/* ===================================================
+            LEFT: FORM
+        =================================================== */}
+
+        <form
+          ref={formRef}
+          className="co-panel"
+          noValidate
+          onSubmit={(e) =>
+            e.preventDefault()
+          }
+        >
+
+          {/* Delivery / Pickup */}
+
+          <div
+            className="co-tabs"
+            role="tablist"
+          >
             <button
               type="button"
               role="tab"
-              aria-selected={deliveryType === "delivery"}
-              className={deliveryType === "delivery" ? "co-tab active" : "co-tab"}
-              onClick={() => setDeliveryType("delivery")}
+              aria-selected={
+                deliveryType ===
+                "delivery"
+              }
+              className={
+                deliveryType === "delivery"
+                  ? "co-tab active"
+                  : "co-tab"
+              }
+              onClick={() =>
+                setDeliveryType(
+                  "delivery"
+                )
+              }
             >
-              Delivery
+              {t("delivery")}
             </button>
+
             <button
               type="button"
               role="tab"
-              aria-selected={deliveryType === "pickup"}
-              className={deliveryType === "pickup" ? "co-tab active" : "co-tab"}
-              onClick={() => setDeliveryType("pickup")}
+              aria-selected={
+                deliveryType ===
+                "pickup"
+              }
+              className={
+                deliveryType === "pickup"
+                  ? "co-tab active"
+                  : "co-tab"
+              }
+              onClick={() =>
+                setDeliveryType(
+                  "pickup"
+                )
+              }
             >
-              Pickup
+              {t("pickup")}
             </button>
           </div>
 
+          {/* Contact details */}
+
           <div className="co-panel-title">
-            <span className="co-num">No. 1</span>
-            <h2>Contact details</h2>
+            <span className="co-num">
+              {t("section_number", {
+                number: 1,
+              })}
+            </span>
+
+            <h2>
+              {t("contact_details")}
+            </h2>
           </div>
 
           <div className="co-grid">
+
             <Field
-              label="First name"
+              label={t(
+                "fields.first_name"
+              )}
               name="firstName"
               autoComplete="given-name"
               value={form.firstName}
@@ -438,8 +690,11 @@ const handlePayNow = async () => {
               onChange={handleChange}
               onBlur={handleBlur}
             />
+
             <Field
-              label="Last name"
+              label={t(
+                "fields.last_name"
+              )}
               name="lastName"
               autoComplete="family-name"
               value={form.lastName}
@@ -447,8 +702,11 @@ const handlePayNow = async () => {
               onChange={handleChange}
               onBlur={handleBlur}
             />
+
             <Field
-              label="Phone"
+              label={t(
+                "fields.phone"
+              )}
               name="phone"
               type="tel"
               placeholder="+92 300 1234567"
@@ -458,8 +716,11 @@ const handlePayNow = async () => {
               onChange={handleChange}
               onBlur={handleBlur}
             />
+
             <Field
-              label="Email"
+              label={t(
+                "fields.email"
+              )}
               name="email"
               type="email"
               placeholder="you@email.com"
@@ -469,32 +730,54 @@ const handlePayNow = async () => {
               onChange={handleChange}
               onBlur={handleBlur}
             />
+
           </div>
+
+          {/* Delivery address */}
 
           {showAddressFields && (
             <>
               <hr className="co-divider" />
 
               <div className="co-panel-title">
-                <span className="co-num">No. 2</span>
-                <h2>Delivery address</h2>
+                <span className="co-num">
+                  {t("section_number", {
+                    number: 2,
+                  })}
+                </span>
+
+                <h2>
+                  {t(
+                    "delivery_address"
+                  )}
+                </h2>
               </div>
 
               <div className="co-grid">
+
                 <Field
                   className="co-full"
-                  label="Address"
+                  label={t(
+                    "fields.address"
+                  )}
                   name="address"
-                  placeholder="House, street, area"
-                  hint="Street address, apartment, or landmark"
+                  placeholder={t(
+                    "fields.address_placeholder"
+                  )}
+                  hint={t(
+                    "fields.address_hint"
+                  )}
                   autoComplete="street-address"
                   value={form.address}
                   error={errors.address}
                   onChange={handleChange}
                   onBlur={handleBlur}
                 />
+
                 <Field
-                  label="City"
+                  label={t(
+                    "fields.city"
+                  )}
                   name="city"
                   autoComplete="address-level2"
                   value={form.city}
@@ -502,158 +785,499 @@ const handlePayNow = async () => {
                   onChange={handleChange}
                   onBlur={handleBlur}
                 />
+
                 <Field
-                  label="Postal code"
+                  label={t(
+                    "fields.postal_code"
+                  )}
                   name="postalCode"
-                  placeholder="e.g. 54660"
+                  placeholder={t(
+                    "fields.postal_code_placeholder"
+                  )}
                   autoComplete="postal-code"
                   value={form.postalCode}
-                  error={errors.postalCode}
+                  error={
+                    errors.postalCode
+                  }
                   onChange={handleChange}
                   onBlur={handleBlur}
                 />
+
               </div>
             </>
           )}
         </form>
 
-        {/* ---------------- RIGHT: RECEIPT ---------------- */}
+        {/* ===================================================
+            RIGHT: RECEIPT
+        =================================================== */}
+
         <aside className="co-receipt-wrap">
+
           <div className="co-receipt">
-            <h2 className="co-receipt-title">Order summary</h2>
+
+            <h2 className="co-receipt-title">
+              {t("order_summary")}
+            </h2>
+
+            {/* Loading */}
 
             {cartLoading && (
               <div className="co-cart-state">
-                <span className="co-spinner" /> Loading your order…
+                <span className="co-spinner" />
+
+                {t("loading_order")}
               </div>
             )}
 
-            {cartError && !cartLoading && (
-              <div className="co-cart-state co-cart-error">
-                <p>{cartError}</p>
-                <button type="button" className="co-retry" onClick={fetchCart}>
-                  Try again
-                </button>
-              </div>
-            )}
+            {/* Error */}
 
-            {cart && !cartLoading && !cartError && (
-              <>
-                {cart.items.map((item, i) => (
-                  <div className="co-item" key={`${item.product.id}-${item.size?.id ?? 0}-${i}`}>
-                    <div className="co-item-meta">
-                      <div className="co-thumb">
-                        {item?.product.image ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={process.env.NEXT_PUBLIC_baseURL_images+item.product.image} alt={item.product.name} />
-                        ) : (
-                          <span aria-hidden>🍽️</span>
-                        )}
-                      </div>
-                      <div>
-                        <div className="co-item-name">
-                          {item.product.name}
-                          <span className="co-qty-badge">×{item.quantity}</span>
+            {cartError &&
+              !cartLoading && (
+                <div className="co-cart-state co-cart-error">
+
+                  <p>
+                    {cartError}
+                  </p>
+
+                  <button
+                    type="button"
+                    className="co-retry"
+                    onClick={
+                      fetchCart
+                    }
+                  >
+                    {t("try_again")}
+                  </button>
+
+                </div>
+              )}
+
+            {/* Cart */}
+
+            {cart &&
+              !cartLoading &&
+              !cartError && (
+                <>
+
+                  {/* Items */}
+
+                  {cart.items.map(
+                    (item, i) => (
+                      <div
+                        className="co-item"
+                        key={`${item.product.id}-${item.size?.id ?? 0}-${i}`}
+                      >
+
+                        <div className="co-item-meta">
+
+                          <div className="co-thumb">
+
+                            {item?.product
+                              .image ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={
+                                  process.env
+                                    .NEXT_PUBLIC_baseURL_images +
+                                  item.product
+                                    .image
+                                }
+                                alt={
+                                  item
+                                    .product
+                                    .name
+                                }
+                              />
+                            ) : (
+                              <span
+                                aria-hidden
+                              >
+                                🍽️
+                              </span>
+                            )}
+
+                          </div>
+
+                          <div>
+
+                            <div className="co-item-name">
+
+                              {
+                                item
+                                  .product
+                                  .name
+                              }
+
+                              <span className="co-qty-badge">
+                                ×
+                                {
+                                  item.quantity
+                                }
+                              </span>
+
+                            </div>
+
+                            {itemMeta(
+                              item
+                            ) && (
+                              <div className="co-item-sub">
+                                {itemMeta(
+                                  item
+                                )}
+                              </div>
+                            )}
+
+                          </div>
+
                         </div>
-                        {itemMeta(item) && <div className="co-item-sub">{itemMeta(item)}</div>}
+
+                        <div className="co-item-price">
+                          {money(
+                            item.itemTotal
+                          )}
+                        </div>
+
                       </div>
-                    </div>
-                    <div className="co-item-price">{money(item.itemTotal)}</div>
+                    )
+                  )}
+
+                  <hr className="co-dashed" />
+
+                  {/* Total */}
+
+                  <div className="co-row">
+
+                    <span className="co-lbl">
+                      {t("total")}
+                    </span>
+
+                    <span>
+                      {money(
+                        totalAmount
+                      )}
+                    </span>
+
                   </div>
-                ))}
 
-                <hr className="co-dashed" />
+                  {/* Delivery */}
 
-                <div className="co-row">
-                  <span className="co-lbl">Total</span>
-                  <span>{money(totalAmount)}</span>
-                </div>
-                <div className="co-row">
-                  <span className="co-lbl">Delivery fee</span>
-                  <span>{money(deliveryFee)}</span>
-                </div>
+                  <div className="co-row">
 
-                <hr className="co-dashed" />
+                    <span className="co-lbl">
+                      {t(
+                        "delivery_fee"
+                      )}
+                    </span>
 
-                <div className="co-grand">
-                  <span className="co-grand-lbl">Grand total</span>
-                  <span className="co-grand-val">{money(grandTotal)}</span>
-                </div>
+                    <span>
+                      {deliveryFee ===
+                      0
+                        ? t("free")
+                        : money(
+                            deliveryFee
+                          )}
+                    </span>
 
-                {/* Payment method — single select, Cash by default */}
-                <div className="co-pay-title" id="pay-label">
-                  Payment method
-                </div>
-                <div role="radiogroup" aria-labelledby="pay-label">
-                  {PAYMENT_METHODS.map((pm) => (
-                    <label key={pm.id} className={`co-pm ${paymentMethod === pm.id ? "sel" : ""}`}>
+                  </div>
+
+                  <hr className="co-dashed" />
+
+                  {/* Grand total */}
+
+                  <div className="co-grand">
+
+                    <span className="co-grand-lbl">
+                      {t(
+                        "grand_total"
+                      )}
+                    </span>
+
+                    <span className="co-grand-val">
+                      {money(
+                        grandTotal
+                      )}
+                    </span>
+
+                  </div>
+
+                  {/* Payment method */}
+
+                  <div
+                    className="co-pay-title"
+                    id="pay-label"
+                  >
+                    {t(
+                      "payment_method"
+                    )}
+                  </div>
+
+                  <div
+                    role="radiogroup"
+                    aria-labelledby="pay-label"
+                  >
+
+                    {/* CASH */}
+
+                    <label
+                      className={`co-pm ${
+                        paymentMethod ===
+                        "cash"
+                          ? "sel"
+                          : ""
+                      }`}
+                    >
+
                       <input
                         type="radio"
                         name="paymentMethod"
-                        value={pm.id}
-                        checked={paymentMethod === pm.id}
-                        onChange={() => setPaymentMethod(pm.id)}
+                        value="cash"
+                        checked={
+                          paymentMethod ===
+                          "cash"
+                        }
+                        onChange={() =>
+                          setPaymentMethod(
+                            "cash"
+                          )
+                        }
                       />
-                      <span className="co-radio" aria-hidden />
+
+                      <span
+                        className="co-radio"
+                        aria-hidden
+                      />
+
                       <span className="co-pm-text">
-                        <span className="co-pm-name">{pm.label}</span>
-                        <span className="co-pm-sub">{pm.sub}</span>
+
+                        <span className="co-pm-name">
+                          {t(
+                            "payment_methods.cash.label"
+                          )}
+                        </span>
+
+                        <span className="co-pm-sub">
+                          {t(
+                            "payment_methods.cash.sub"
+                          )}
+                        </span>
+
                       </span>
+
                     </label>
-                  ))}
-                </div>
 
-                {paymentMethod === "card" ? (
-                  /* Card selected → show Stripe inputs inline. The Pay button
-                   * lives inside so it can use the Stripe hooks. */
-                  <Elements stripe={stripePromise} options={stripeOptions}>
-                    <StripeCardSection
-                      grandTotal={grandTotal}
-                      validateForm={validate}
-                      buildPayload={buildPayload}
-                    />
-                  </Elements>
-                ):(
-                    <>
-                {apiError && (
-                  <div className="co-alert" role="alert">
-                    {apiError}
+                    {/* CARD */}
+
+                    <label
+                      className={`co-pm ${
+                        paymentMethod ===
+                        "card"
+                          ? "sel"
+                          : ""
+                      }`}
+                    >
+
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="card"
+                        checked={
+                          paymentMethod ===
+                          "card"
+                        }
+                        onChange={() =>
+                          setPaymentMethod(
+                            "card"
+                          )
+                        }
+                      />
+
+                      <span
+                        className="co-radio"
+                        aria-hidden
+                      />
+
+                      <span className="co-pm-text">
+
+                        <span className="co-pm-name">
+                          {t(
+                            "payment_methods.card.label"
+                          )}
+                        </span>
+
+                        <span className="co-pm-sub">
+                          {t(
+                            "payment_methods.card.sub"
+                          )}
+                        </span>
+
+                      </span>
+
+                    </label>
+
+                    {/* PAYPAL */}
+
+                    <label
+                      className={`co-pm ${
+                        paymentMethod ===
+                        "paypal"
+                          ? "sel"
+                          : ""
+                      }`}
+                    >
+
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="paypal"
+                        checked={
+                          paymentMethod ===
+                          "paypal"
+                        }
+                        onChange={() =>
+                          setPaymentMethod(
+                            "paypal"
+                          )
+                        }
+                      />
+
+                      <span
+                        className="co-radio"
+                        aria-hidden
+                      />
+
+                      <span className="co-pm-text">
+
+                        <span className="co-pm-name">
+                          {t(
+                            "payment_methods.paypal.label"
+                          )}
+                        </span>
+
+                        <span className="co-pm-sub">
+                          {t(
+                            "payment_methods.paypal.sub"
+                          )}
+                        </span>
+
+                      </span>
+
+                    </label>
+
                   </div>
-                )}
 
-                <button
-                  type="button"
-                  className="co-paybtn"
-                  onClick={handlePayNow}
-                  disabled={submitting || cartLoading}
-                >
-                  {submitting ? (
-                    <>
-                      <span className="co-spinner light" /> Processing…
-                    </>
+                  {/* Stripe */}
+
+                  {paymentMethod ===
+                  "card" ? (
+                    <Elements
+                      stripe={
+                        stripePromise
+                      }
+                      options={
+                        stripeOptions
+                      }
+                    >
+                      <StripeCardSection
+                        grandTotal={
+                          grandTotal
+                        }
+                        validateForm={
+                          validate
+                        }
+                        buildPayload={
+                          buildPayload
+                        }
+                      />
+                    </Elements>
                   ) : (
                     <>
-                      <LockIcon /> Pay now Cash · {money(grandTotal)}
+                      {/* API error */}
+
+                      {apiError && (
+                        <div
+                          className="co-alert"
+                          role="alert"
+                        >
+                          {apiError}
+                        </div>
+                      )}
+
+                      {/* Pay button */}
+
+                      <button
+                        type="button"
+                        className="co-paybtn"
+                        onClick={
+                          handlePayNow
+                        }
+                        disabled={
+                          submitting ||
+                          cartLoading
+                        }
+                      >
+
+                        {submitting ? (
+                          <>
+                            <span className="co-spinner light" />
+
+                            {t(
+                              "processing"
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            <LockIcon />
+
+                            {paymentMethod ===
+                            "paypal"
+                              ? t(
+                                  "continue_to_paypal"
+                                )
+                              : t(
+                                  "pay_now"
+                                )}
+
+                            {" · "}
+
+                            {money(
+                              grandTotal
+                            )}
+                          </>
+                        )}
+
+                      </button>
                     </>
                   )}
-                </button>
+
+                  {/* Trust message */}
+
+                  <p className="co-trust">
+                    {t(
+                      "trust_message"
+                    )}
+                  </p>
+
                 </>
-                )}
-                <p className="co-trust">You won&apos;t be charged until your order is confirmed.</p>
-              
-              </>
-            )}
+              )}
+
           </div>
+
           <ReceiptEdge />
+
         </aside>
+
       </div>
     </div>
   );
 }
 
-/* ---------------- Small components ---------------- */
+/* =========================================================
+   Field
+========================================================= */
 
-interface FieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface FieldProps
+  extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;
   name: string;
   error?: string;
@@ -661,47 +1285,109 @@ interface FieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   className?: string;
 }
 
-function Field({ label, name, error, hint, className = "", ...rest }: FieldProps) {
+function Field({
+  label,
+  name,
+  error,
+  hint,
+  className = "",
+  ...rest
+}: FieldProps) {
   return (
-    <div className={`co-field ${className}`}>
-      <label htmlFor={name}>{label}</label>
+    <div
+      className={`co-field ${className}`}
+    >
+      <label htmlFor={name}>
+        {label}
+      </label>
+
       <input
         id={name}
         name={name}
-        className={`co-input ${error ? "invalid" : ""}`}
+        className={`co-input ${
+          error ? "invalid" : ""
+        }`}
         aria-invalid={!!error}
-        aria-describedby={error ? `${name}-error` : undefined}
+        aria-describedby={
+          error
+            ? `${name}-error`
+            : undefined
+        }
         {...rest}
       />
+
       {error ? (
-        <span className="co-error" id={`${name}-error`} role="alert">
+        <span
+          className="co-error"
+          id={`${name}-error`}
+          role="alert"
+        >
           {error}
         </span>
       ) : hint ? (
-        <span className="co-hint">{hint}</span>
+        <span className="co-hint">
+          {hint}
+        </span>
       ) : null}
     </div>
   );
 }
 
+/* =========================================================
+   Lock Icon
+========================================================= */
+
 function LockIcon() {
   return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" aria-hidden>
-      <rect x="4" y="10" width="16" height="10" rx="2" />
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="#fff"
+      strokeWidth="2.2"
+      aria-hidden
+    >
+      <rect
+        x="4"
+        y="10"
+        width="16"
+        height="10"
+        rx="2"
+      />
+
       <path d="M8 10V7a4 4 0 0 1 8 0v3" />
     </svg>
   );
 }
 
+/* =========================================================
+   Receipt Edge
+========================================================= */
+
 function ReceiptEdge() {
-  // Perforated bottom edge of the receipt card
-  const teeth = Array.from({ length: 20 }, (_, i) => {
-    const x = 400 - i * 20;
-    return `L${x - 10} 14 L${x - 20} 2`;
-  }).join(" ");
+  const teeth = Array.from(
+    { length: 20 },
+    (_, i) => {
+      const x = 400 - i * 20;
+
+      return `L${x - 10} 14 L${
+        x - 20
+      } 2`;
+    }
+  ).join(" ");
+
   return (
-    <svg className="co-receipt-edge" viewBox="0 0 400 14" preserveAspectRatio="none" aria-hidden>
-      <path d={`M0 0 H400 V2 ${teeth} Z`} fill="#ffffff" />
+    <svg
+      className="co-receipt-edge"
+      viewBox="0 0 400 14"
+      preserveAspectRatio="none"
+      aria-hidden
+    >
+      <path
+        d={`M0 0 H400 V2 ${teeth} Z`}
+        fill="#ffffff"
+      />
     </svg>
   );
 }

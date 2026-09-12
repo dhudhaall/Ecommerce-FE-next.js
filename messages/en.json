@@ -1,13 +1,344 @@
 {
   "Navbar": {
     "home": "Home",
-    "products": "Products",
+    "products": "Menu",
     "about": "About",
     "contact": "Contact"
   },
+  "Footer": {
+    "tagline": "Fresh, local, fast. Stone-baked pizza and kitchen favourites delivered across our service areas.",
+    "social": {
+      "facebook": "Facebook",
+      "instagram": "Instagram",
+      "x": "X"
+    },
+    "contact": {
+      "title": "Get in touch"
+    },
+    "explore": {
+      "title": "Explore",
+      "home": "Home",
+      "menu": "Menu",
+      "contact": "Contact"
+    },
+    "hours": {
+      "title": "Opening hours",
+      "mondayThursday": "Mon – Thu",
+      "fridaySaturday": "Fri – Sat",
+      "sunday": "Sunday"
+    },
+    "bottom": {
+      "copyright": "© {year} Pizzeria Con Amore. All rights reserved.",
+      "imprint": "Imprint",
+      "privacy": "Privacy",
+      "terms": "Terms"
+    }
+  },
   "HomePage": {
-    "title_1": "Order food",
-    "title_2": "and more",
-    "sub_title": "Fresh from our kitchen, delivered to your area"
+    "title_1": "Fresh pizza.",
+    "title_2": "Made with love.",
+    "sub_title": "Delicious stone-baked pizza and kitchen favourites, made fresh and delivered straight to your door.",
+
+    "search": {
+      "loading": "Loading delivery areas…",
+      "placeholder": "Enter your postal code or area",
+      "button": "Search",
+      "aria_label": "Postal code or area",
+      "deliver_to": "We deliver to",
+      "delivery": "delivery",
+      "no_matching_area": "No matching area — try your postal code",
+      "try_again": "Try again",
+      "success": "Great — we deliver to {area} ({fee} delivery{minOrder})",
+      "min_order": ", min. order {amount}",
+      "error_empty": "Please enter your postal code or pick your area.",
+      "error_not_available": "Sorry, we don't deliver to this address yet."
+    },
+
+    "hero": {
+      "badge": "Fresh · Local · Fast"
+    },
+
+    "pizza": {
+      "kicker": "Straight from the stone oven",
+      "title_1": "Hot pizza at your door",
+      "title_2": "in 30 minutes.",
+      "lead": "Hand-stretched dough proved for 48 hours, San Marzano tomatoes, and fior di latte — baked at 400°C and boxed the moment it leaves the oven, so it reaches you with the crust still crackling.",
+
+      "points": {
+        "baked_to_order": {
+          "title": "Baked to order",
+          "description": "Nothing sits under a heat lamp — we fire it when you order."
+        },
+        "insulated_delivery": {
+          "title": "Insulated delivery",
+          "description": "Thermal bags keep it oven-hot the whole way to your door."
+        },
+        "fresh_toppings": {
+          "title": "Fresh toppings daily",
+          "description": "Produce delivered each morning, never frozen."
+        }
+      },
+
+      "cta": "See the pizza menu →",
+
+      "stats": {
+        "delivery_time": "avg. delivery",
+        "stone_oven": "stone oven",
+        "proved_dough": "proved dough"
+      }
+    },
+
+    "how_to_order": {
+      "kicker": "How to order",
+      "title": "It's as easy as this.",
+
+      "steps": {
+        "find_area": {
+          "title": "Find your area",
+          "description": "Enter your postal code and we'll check if you're in one of our delivery zones."
+        },
+        "pick_food": {
+          "title": "Pick your food",
+          "description": "Choose your dishes, sizes, and add-ons — everything is made fresh to order."
+        },
+        "pay": {
+          "title": "Pay your way",
+          "description": "Cash on delivery, card, or PayPal — then sit back while we bring it over."
+        }
+      }
+    }
+  },
+  "AboutPage": {
+    "hero": {
+      "title": "About Foodie",
+      "description": "Bringing delicious meals to your doorstep with love, quality, and speed."
+    },
+
+    "about": {
+      "title": "Who We Are",
+      "description_1": "We are passionate food lovers committed to delivering high-quality meals from the best restaurants around you.",
+      "description_2": "Our platform connects you with your favorite food in just a few clicks.",
+      "image_alt": "Delicious food"
+    },
+
+    "gallery": {
+      "title": "Our Special Dishes",
+      "dish_1_alt": "Special dish",
+      "dish_2_alt": "Delicious meal",
+      "dish_3_alt": "Freshly prepared food"
+    },
+
+    "why_us": {
+      "title": "Why Choose Us",
+
+      "fast_delivery": {
+        "title": "Fast Delivery",
+        "description": "Get your food delivered quickly and fresh."
+      },
+
+      "best_quality": {
+        "title": "Best Quality",
+        "description": "We partner with top-rated restaurants only."
+      },
+
+      "great_prices": {
+        "title": "Great Prices",
+        "description": "Affordable meals with amazing offers."
+      }
+    }
+  },
+  "CartPage": {
+    "title": "Your Cart",
+    "item": "item",
+    "items": "items",
+    "loading": "Loading your cart…",
+    "items_label": "Cart items",
+    "product_image": "Product image",
+    "unnamed_item": "Unnamed item",
+    "quantity": "Quantity",
+    "decrease_quantity": "Decrease quantity",
+    "increase_quantity": "Increase quantity",
+    "remove_item": "Remove {item}",
+    "remove": "Remove",
+
+    "empty": {
+      "title": "Your cart is empty",
+      "description": "Looks like you haven’t added anything yet.",
+      "continue_shopping": "Continue shopping"
+    },
+
+    "summary": {
+      "aria_label": "Order summary",
+      "title": "Order summary",
+      "loading": "Loading your order…",
+      "subtotal": "Subtotal",
+      "discount": "Discount",
+      "delivery": "Delivery",
+      "free": "Free",
+      "tax": "Tax",
+      "total": "Total",
+      "checkout": "Checkout",
+      "note": "Taxes & delivery calculated at checkout."
+    }
+  },
+  "CheckoutPage": {
+    "title": "Checkout",
+    "subtitle": "Almost there — fill in your details and choose how you'd like to pay.",
+
+    "delivery": "Delivery",
+    "pickup": "Pickup",
+
+    "section_number": "No. {number}",
+    "contact_details": "Contact details",
+    "delivery_address": "Delivery address",
+
+    "fields": {
+      "first_name": "First name",
+      "last_name": "Last name",
+      "phone": "Phone",
+      "email": "Email",
+      "address": "Address",
+      "address_placeholder": "House, street, area",
+      "address_hint": "Street address, apartment, or landmark",
+      "city": "City",
+      "postal_code": "Postal code",
+      "postal_code_placeholder": "e.g. 54660"
+    },
+
+    "validation": {
+      "first_name_required": "First name is required",
+      "last_name_required": "Last name is required",
+      "min_2_chars": "Must be at least 2 characters",
+      "phone_required": "Phone number is required",
+      "phone_invalid": "Enter a valid phone number",
+      "email_required": "Email is required",
+      "email_invalid": "Enter a valid email address",
+      "address_required": "Address is required",
+      "address_invalid": "Enter a complete address",
+      "city_required": "City is required",
+      "postal_required": "Postal code is required",
+      "postal_invalid": "Enter a valid postal code"
+    },
+
+    "order_summary": "Order summary",
+    "loading_order": "Loading your order…",
+    "try_again": "Try again",
+
+    "total": "Total",
+    "delivery_fee": "Delivery fee",
+    "grand_total": "Grand total",
+
+    "payment_method": "Payment method",
+
+    "payment_methods": {
+      "cash": {
+        "label": "Cash on delivery",
+        "sub": "Pay when your order arrives"
+      },
+      "card": {
+        "label": "Credit / Debit card",
+        "sub": "Visa, Mastercard, Amex — via Stripe"
+      },
+      "paypal": {
+        "label": "PayPal",
+        "sub": "You'll be redirected to PayPal"
+      }
+    },
+
+    "processing": "Processing…",
+    "pay_now": "Pay now",
+    "trust_message": "You won't be charged until your order is confirmed.",
+
+    "errors": {
+      "cart_empty": "Your cart is empty.",
+      "checkout_failed": "Checkout failed.",
+      "could_not_load": "Could not load your order.",
+      "payment_failed": "Payment could not be started."
+    }
+  },
+  "ContactPage": {
+    "header": {
+      "kicker": "Contact us",
+      "title": "We'd love to hear from you",
+      "description": "Questions about an order, a booking, or just want to say hello? Drop by, call, or send us a message — we usually reply within a few hours."
+    },
+
+    "information": {
+      "title": "Our information",
+      "address": "Address",
+      "city": "City",
+      "phone": "Phone",
+      "email": "Email",
+      "call_us": "Call us",
+      "get_directions": "Get directions"
+    },
+
+    "hours": {
+      "title": "Opening hours",
+      "today": "Today",
+      "closed": "Closed",
+      "note": "Kitchen closes 30 minutes before closing time. Delivery orders stop 45 minutes before.",
+
+      "days": {
+        "monday": "Monday",
+        "tuesday": "Tuesday",
+        "wednesday": "Wednesday",
+        "thursday": "Thursday",
+        "friday": "Friday",
+        "saturday": "Saturday",
+        "sunday": "Sunday"
+      }
+    },
+
+    "form": {
+      "title": "Send us a message",
+      "name": "Your name",
+      "name_placeholder": "Jane Doe",
+      "email": "Email",
+      "email_placeholder": "you@email.com",
+      "subject": "Subject",
+      "optional": "optional",
+      "subject_placeholder": "Order enquiry, feedback, booking…",
+      "message": "Message",
+      "message_placeholder": "How can we help?",
+      "sending": "Sending…",
+      "send_message": "Send message",
+      "prefer_email": "Prefer email? Write to"
+    },
+
+    "validation": {
+      "name_required": "Please enter your name",
+      "email_required": "Please enter your email",
+      "email_invalid": "Enter a valid email address",
+      "message_required": "Please write a message",
+      "message_short": "Message is a bit short"
+    },
+
+    "success": {
+      "title": "Thanks — your message is on its way",
+      "description": "We'll get back to you at the email you provided.",
+      "send_another": "Send another message"
+    },
+
+    "errors": {
+      "send_failed": "Could not send your message.",
+      "generic": "Something went wrong. Please try again."
+    },
+
+    "default_subject": "Website enquiry",
+
+    "map": {
+      "title": "Find us",
+      "open_google_maps": "Open in Google Maps",
+      "iframe_title": "Map showing {name} at {address}, {city}"
+    }
+  },
+  "ProductsPage":{
+    "add_to_cart":"Add to Cart",
+    "no_products_found":"No products available in this category"
   }
+
+
+
+
 }

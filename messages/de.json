@@ -1,13 +1,340 @@
 {
-  "Navbar": {
-    "home": "Home",
-    "products": "Products",
-    "about": "About",
-    "contact": "Contact"
+ "Navbar": {
+  "home": "Startseite",
+  "products": "Produkte",
+  "about": "Über uns",
+  "contact": "Kontakt"
+},
+  "Footer": {
+    "tagline": "Frisch, regional, schnell. Steinofenpizza und beliebte Gerichte direkt zu Ihnen geliefert.",
+    "social": {
+      "facebook": "Facebook",
+      "instagram": "Instagram",
+      "x": "X"
+    },
+    "contact": {
+      "title": "Kontakt"
+    },
+    "explore": {
+      "title": "Entdecken",
+      "home": "Startseite",
+      "menu": "Speisekarte",
+      "contact": "Kontakt"
+    },
+    "hours": {
+      "title": "Öffnungszeiten",
+      "mondayThursday": "Mo – Do",
+      "fridaySaturday": "Fr – Sa",
+      "sunday": "Sonntag"
+    },
+    "bottom": {
+      "copyright": "© {year} Pizzeria Con Amore. Alle Rechte vorbehalten.",
+      "imprint": "Impressum",
+      "privacy": "Datenschutz",
+      "terms": "AGB"
+    }
   },
   "HomePage": {
-    "title_1": "Essen Bestellen",
-    "title_2": "Und Mehr",
-    "sub_title": "Frisch aus unserer Küche, in Ihre Nähe geliefert"
+    "title_1": "Frische Pizza.",
+    "title_2": "Mit Liebe gemacht.",
+    "sub_title": "Köstliche Steinofenpizza und beliebte Gerichte, frisch zubereitet und direkt zu Ihnen nach Hause geliefert.",
+
+    "search": {
+      "loading": "Liefergebiete werden geladen…",
+      "placeholder": "Postleitzahl oder Ort eingeben",
+      "button": "Suchen",
+      "aria_label": "Postleitzahl oder Ort",
+      "deliver_to": "Wir liefern nach",
+      "delivery": "Lieferung",
+      "no_matching_area": "Kein passendes Gebiet – versuchen Sie Ihre Postleitzahl",
+      "try_again": "Erneut versuchen",
+      "success": "Super – wir liefern nach {area} ({fee} Lieferung{minOrder})",
+      "min_order": ", Mindestbestellwert {amount}",
+      "error_empty": "Bitte geben Sie Ihre Postleitzahl ein oder wählen Sie Ihr Gebiet.",
+      "error_not_available": "Leider liefern wir derzeit noch nicht an diese Adresse."
+    },
+
+    "hero": {
+      "badge": "Frisch · Regional · Schnell"
+    },
+
+    "pizza": {
+      "kicker": "Direkt aus dem Steinofen",
+      "title_1": "Heiße Pizza an Ihrer Tür",
+      "title_2": "in 30 Minuten.",
+      "lead": "48 Stunden gereifter, von Hand gezogener Teig, San-Marzano-Tomaten und Fior di Latte – bei 400 °C gebacken und direkt nach dem Verlassen des Ofens verpackt, damit der knusprige Rand bis zu Ihnen nach Hause erhalten bleibt.",
+
+      "points": {
+        "baked_to_order": {
+          "title": "Frisch auf Bestellung gebacken",
+          "description": "Nichts wartet unter einer Wärmelampe – wir backen Ihre Pizza erst, wenn Sie bestellen."
+        },
+        "insulated_delivery": {
+          "title": "Isolierte Lieferung",
+          "description": "Thermoboxen halten Ihre Pizza auf dem gesamten Weg bis zu Ihrer Haustür heiß."
+        },
+        "fresh_toppings": {
+          "title": "Täglich frische Zutaten",
+          "description": "Frische Produkte werden jeden Morgen geliefert und niemals tiefgefroren."
+        }
+      },
+
+      "cta": "Pizza-Menü ansehen →",
+
+      "stats": {
+        "delivery_time": "durchschnittliche Lieferung",
+        "stone_oven": "Steinofen",
+        "proved_dough": "Teigruhe"
+      }
+    },
+
+    "how_to_order": {
+      "kicker": "So bestellen Sie",
+      "title": "So einfach geht's.",
+
+      "steps": {
+        "find_area": {
+          "title": "Gebiet auswählen",
+          "description": "Geben Sie Ihre Postleitzahl ein und wir prüfen, ob Sie in unserem Liefergebiet liegen."
+        },
+        "pick_food": {
+          "title": "Essen auswählen",
+          "description": "Wählen Sie Ihre Gerichte, Größen und Extras – alles wird frisch auf Bestellung zubereitet."
+        },
+        "pay": {
+          "title": "Zahlungsart wählen",
+          "description": "Bar bei Lieferung, per Karte oder PayPal – lehnen Sie sich zurück und wir bringen Ihre Bestellung zu Ihnen."
+        }
+      }
+    }
+  },
+  "AboutPage": {
+    "hero": {
+      "title": "Über Foodie",
+      "description": "Wir bringen Ihnen köstliche Gerichte mit Liebe, Qualität und Schnelligkeit direkt nach Hause."
+    },
+
+    "about": {
+      "title": "Wer wir sind",
+      "description_1": "Wir sind leidenschaftliche Food-Liebhaber und möchten Ihnen hochwertige Gerichte von den besten Restaurants in Ihrer Umgebung liefern.",
+      "description_2": "Unsere Plattform verbindet Sie mit Ihren Lieblingsgerichten – mit nur wenigen Klicks.",
+      "image_alt": "Köstliches Essen"
+    },
+
+    "gallery": {
+      "title": "Unsere Spezialitäten",
+      "dish_1_alt": "Spezialgericht",
+      "dish_2_alt": "Köstliches Gericht",
+      "dish_3_alt": "Frisch zubereitetes Essen"
+    },
+
+    "why_us": {
+      "title": "Warum Sie uns wählen sollten",
+
+      "fast_delivery": {
+        "title": "Schnelle Lieferung",
+        "description": "Wir liefern Ihr Essen schnell und frisch zu Ihnen nach Hause."
+      },
+
+      "best_quality": {
+        "title": "Beste Qualität",
+        "description": "Wir arbeiten ausschließlich mit erstklassig bewerteten Restaurants zusammen."
+      },
+
+      "great_prices": {
+        "title": "Faire Preise",
+        "description": "Genießen Sie leckere Gerichte zu attraktiven Preisen und profitieren Sie von tollen Angeboten."
+      }
+    }
+  },
+  "CartPage": {
+    "title": "Ihr Warenkorb",
+    "item": "Artikel",
+    "items": "Artikel",
+    "loading": "Ihr Warenkorb wird geladen…",
+    "items_label": "Artikel im Warenkorb",
+    "product_image": "Produktbild",
+    "unnamed_item": "Unbenannter Artikel",
+    "quantity": "Menge",
+    "decrease_quantity": "Menge verringern",
+    "increase_quantity": "Menge erhöhen",
+    "remove_item": "{item} entfernen",
+    "remove": "Entfernen",
+
+    "empty": {
+      "title": "Ihr Warenkorb ist leer",
+      "description": "Sie haben bisher noch keine Artikel hinzugefügt.",
+      "continue_shopping": "Weiter einkaufen"
+    },
+
+    "summary": {
+      "aria_label": "Bestellübersicht",
+      "title": "Bestellübersicht",
+      "loading": "Ihre Bestellung wird geladen…",
+      "subtotal": "Zwischensumme",
+      "discount": "Rabatt",
+      "delivery": "Lieferung",
+      "free": "Kostenlos",
+      "tax": "Steuern",
+      "total": "Gesamt",
+      "checkout": "Zur Kasse",
+      "note": "Steuern und Lieferkosten werden an der Kasse berechnet."
+    }
+  },
+  "CheckoutPage": {
+    "title": "Kasse",
+    "subtitle": "Fast geschafft – geben Sie Ihre Daten ein und wählen Sie Ihre bevorzugte Zahlungsart.",
+
+    "delivery": "Lieferung",
+    "pickup": "Abholung",
+
+    "section_number": "Nr. {number}",
+    "contact_details": "Kontaktdaten",
+    "delivery_address": "Lieferadresse",
+
+    "fields": {
+      "first_name": "Vorname",
+      "last_name": "Nachname",
+      "phone": "Telefon",
+      "email": "E-Mail",
+      "address": "Adresse",
+      "address_placeholder": "Haus, Straße, Ortsteil",
+      "address_hint": "Straße, Wohnung oder Orientierungspunkt",
+      "city": "Stadt",
+      "postal_code": "Postleitzahl",
+      "postal_code_placeholder": "z. B. 54660"
+    },
+
+    "validation": {
+      "first_name_required": "Vorname ist erforderlich",
+      "last_name_required": "Nachname ist erforderlich",
+      "min_2_chars": "Muss mindestens 2 Zeichen enthalten",
+      "phone_required": "Telefonnummer ist erforderlich",
+      "phone_invalid": "Bitte geben Sie eine gültige Telefonnummer ein",
+      "email_required": "E-Mail-Adresse ist erforderlich",
+      "email_invalid": "Bitte geben Sie eine gültige E-Mail-Adresse ein",
+      "address_required": "Adresse ist erforderlich",
+      "address_invalid": "Bitte geben Sie eine vollständige Adresse ein",
+      "city_required": "Stadt ist erforderlich",
+      "postal_required": "Postleitzahl ist erforderlich",
+      "postal_invalid": "Bitte geben Sie eine gültige Postleitzahl ein"
+    },
+
+    "order_summary": "Bestellübersicht",
+    "loading_order": "Ihre Bestellung wird geladen…",
+    "try_again": "Erneut versuchen",
+
+    "total": "Gesamt",
+    "delivery_fee": "Liefergebühr",
+    "grand_total": "Gesamtsumme",
+
+    "payment_method": "Zahlungsart",
+
+    "payment_methods": {
+      "cash": {
+        "label": "Barzahlung bei Lieferung",
+        "sub": "Bezahlen Sie bei Erhalt Ihrer Bestellung"
+      },
+      "card": {
+        "label": "Kredit- / Debitkarte",
+        "sub": "Visa, Mastercard, Amex – über Stripe"
+      },
+      "paypal": {
+        "label": "PayPal",
+        "sub": "Sie werden zu PayPal weitergeleitet"
+      }
+    },
+
+    "processing": "Wird verarbeitet…",
+    "pay_now": "Jetzt bezahlen",
+    "trust_message": "Ihre Zahlung wird erst verarbeitet, wenn Ihre Bestellung bestätigt wurde.",
+
+    "errors": {
+      "cart_empty": "Ihr Warenkorb ist leer.",
+      "checkout_failed": "Die Bestellung konnte nicht abgeschlossen werden.",
+      "could_not_load": "Ihre Bestellung konnte nicht geladen werden.",
+      "payment_failed": "Die Zahlung konnte nicht gestartet werden."
+    }
+  },
+  "ContactPage": {
+    "header": {
+      "kicker": "Kontakt",
+      "title": "Wir freuen uns, von Ihnen zu hören",
+      "description": "Fragen zu einer Bestellung, einer Reservierung oder einfach nur ein freundliches Hallo? Besuchen Sie uns, rufen Sie an oder senden Sie uns eine Nachricht – normalerweise antworten wir innerhalb weniger Stunden."
+    },
+
+    "information": {
+      "title": "Unsere Informationen",
+      "address": "Adresse",
+      "city": "Stadt",
+      "phone": "Telefon",
+      "email": "E-Mail",
+      "call_us": "Rufen Sie uns an",
+      "get_directions": "Wegbeschreibung"
+    },
+
+    "hours": {
+      "title": "Öffnungszeiten",
+      "today": "Heute",
+      "closed": "Geschlossen",
+      "note": "Die Küche schließt 30 Minuten vor Ladenschluss. Lieferbestellungen werden 45 Minuten vor Ladenschluss beendet.",
+
+      "days": {
+        "monday": "Montag",
+        "tuesday": "Dienstag",
+        "wednesday": "Mittwoch",
+        "thursday": "Donnerstag",
+        "friday": "Freitag",
+        "saturday": "Samstag",
+        "sunday": "Sonntag"
+      }
+    },
+
+    "form": {
+      "title": "Nachricht senden",
+      "name": "Ihr Name",
+      "name_placeholder": "Max Mustermann",
+      "email": "E-Mail",
+      "email_placeholder": "sie@beispiel.de",
+      "subject": "Betreff",
+      "optional": "optional",
+      "subject_placeholder": "Bestellanfrage, Feedback, Reservierung…",
+      "message": "Nachricht",
+      "message_placeholder": "Wie können wir Ihnen helfen?",
+      "sending": "Wird gesendet…",
+      "send_message": "Nachricht senden",
+      "prefer_email": "Sie möchten lieber eine E-Mail schreiben? Kontaktieren Sie uns unter"
+    },
+
+    "validation": {
+      "name_required": "Bitte geben Sie Ihren Namen ein",
+      "email_required": "Bitte geben Sie Ihre E-Mail-Adresse ein",
+      "email_invalid": "Bitte geben Sie eine gültige E-Mail-Adresse ein",
+      "message_required": "Bitte schreiben Sie eine Nachricht",
+      "message_short": "Die Nachricht ist etwas zu kurz"
+    },
+
+    "success": {
+      "title": "Vielen Dank – Ihre Nachricht wurde gesendet",
+      "description": "Wir melden uns unter der von Ihnen angegebenen E-Mail-Adresse bei Ihnen.",
+      "send_another": "Weitere Nachricht senden"
+    },
+
+    "errors": {
+      "send_failed": "Ihre Nachricht konnte nicht gesendet werden.",
+      "generic": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut."
+    },
+
+    "default_subject": "Anfrage über die Website",
+
+    "map": {
+      "title": "So finden Sie uns",
+      "open_google_maps": "In Google Maps öffnen",
+      "iframe_title": "Karte mit {name} in {address}, {city}"
+    }
+  },
+  "ProductsPage":{
+    "add_to_cart":"In den Warenkorb",
+    "no_products_found":"Keine Produkte in dieser Kategorie verfügbar"
   }
 }

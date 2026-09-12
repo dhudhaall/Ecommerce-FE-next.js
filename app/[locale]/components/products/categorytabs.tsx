@@ -2,11 +2,14 @@
 
 import { useState } from "react";
 import AddToCart from "./addtoCartModal";
+import { useTranslations } from "next-intl";
+
 
 export default function CategoryTabs({ categories }: any) {
   const [active, setActive] = useState(categories?.[0] || "");
   const [isOpen, setIsOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const t = useTranslations("ProductsPage");
 
   const openCartModal = (product: any) => {
     setSelectedProduct(product);
@@ -17,8 +20,6 @@ export default function CategoryTabs({ categories }: any) {
     setIsOpen(false);
     setSelectedProduct(null);
   };
-
- 
 
   return (
     <div className="w-full">
@@ -55,11 +56,11 @@ export default function CategoryTabs({ categories }: any) {
                     <div className="product-price">€{product?.price}</div>
                 </div>
                 <div className="product-actions">
-                   <button onClick={() =>openCartModal(product)} type="button" className="add-to-cart-btn">Add to cart</button>
+                   <button onClick={() =>openCartModal(product)} type="button" className="add-to-cart-btn">{t("add_to_cart")}</button>
 
                   </div>
                 </div>
-            </div>)):'No products available in this category.'}
+            </div>)): t("no_products_found")}
          
         </div>
       </div>
