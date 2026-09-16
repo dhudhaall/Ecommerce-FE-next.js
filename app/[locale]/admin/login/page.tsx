@@ -1,18 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter, useParams } from "next/navigation";
 import { api, setSession, getToken } from "@/app/[locale]/admin/lib/adminApi";
 
 export default function AdminLogin() {
+  const router = useRouter();
+  const { locale } = useParams<{ locale: string }>();
+  const [checking, setChecking] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Already logged in? Skip straight to orders.
-  if (typeof window !== "undefined" && getToken()) {
-    window.location.href = "/admin/orders";
-  }
+  useEffect(() => {
+    if (getToken()) {
+      router.replace(`/${locale}/admin/orders`);
+    } else {
+      setChecking(false);
+    }
+  }, [router, locale]);
 
   const handleSubmit = async () => {
     setError("");
@@ -28,12 +35,14 @@ export default function AdminLogin() {
         body: { email: email.trim(), password },
       });
       setSession(data.token, data.admin);
-      window.location.href = "/admin/orders";
+      router.replace(`/${locale}/admin/orders`);
     } catch (err: any) {
       setError(err.message || "Login failed.");
       setLoading(false);
     }
   };
+
+  if (checking) return null;
 
   return (
     <div className="ad-login">

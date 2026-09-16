@@ -191,6 +191,8 @@
     "section_number": "No. {number}",
     "contact_details": "Contact details",
     "delivery_address": "Delivery address",
+    "enter_postal_code": "Enter postal code",
+    "zone_ok": "We deliver to {area} ({fee} delivery{minOrder})",
 
     "fields": {
       "first_name": "First name",
@@ -202,7 +204,8 @@
       "address_hint": "Street address, apartment, or landmark",
       "city": "City",
       "postal_code": "Postal code",
-      "postal_code_placeholder": "e.g. 54660"
+      "postal_code_placeholder": "e.g. 77767"
+     
     },
 
     "validation": {
@@ -217,7 +220,8 @@
       "address_invalid": "Enter a complete address",
       "city_required": "City is required",
       "postal_required": "Postal code is required",
-      "postal_invalid": "Enter a valid postal code"
+      "postal_invalid": "Enter a valid postal code",
+      "postal_out_of_zone": "Sorry, we don't deliver to this address yet."
     },
 
     "order_summary": "Order summary",

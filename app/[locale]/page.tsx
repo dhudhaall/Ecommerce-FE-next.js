@@ -546,7 +546,7 @@ export default function Home() {
             {/* CTA */}
 
             <a
-              href="/menu"
+              href="/products"
               className="hm-pizza-cta"
             >
               {translation("pizza.cta")}

@@ -1,7 +1,7 @@
 {
  "Navbar": {
   "home": "Startseite",
-  "products": "Produkte",
+  "products": "Speisekarte",
   "about": "Über uns",
   "contact": "Kontakt"
 },
@@ -191,7 +191,8 @@
     "section_number": "Nr. {number}",
     "contact_details": "Kontaktdaten",
     "delivery_address": "Lieferadresse",
-
+    "enter_postal_code": "Postleitzahl eingeben",
+    "zone_ok": "Wir liefern nach {area} ({fee} Lieferung{minOrder})",
     "fields": {
       "first_name": "Vorname",
       "last_name": "Nachname",
@@ -202,7 +203,8 @@
       "address_hint": "Straße, Wohnung oder Orientierungspunkt",
       "city": "Stadt",
       "postal_code": "Postleitzahl",
-      "postal_code_placeholder": "z. B. 54660"
+      "postal_code_placeholder": "z. B. 77767"
+     
     },
 
     "validation": {
@@ -217,7 +219,8 @@
       "address_invalid": "Bitte geben Sie eine vollständige Adresse ein",
       "city_required": "Stadt ist erforderlich",
       "postal_required": "Postleitzahl ist erforderlich",
-      "postal_invalid": "Bitte geben Sie eine gültige Postleitzahl ein"
+      "postal_invalid": "Bitte geben Sie eine gültige Postleitzahl ein",
+      "postal_out_of_zone": "Leider liefern wir derzeit noch nicht an diese Adresse."
     },
 
     "order_summary": "Bestellübersicht",

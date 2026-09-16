@@ -1,15 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { getAdmin, getToken, logout } from "@/app/[locale]/admin/lib/adminApi";
 import "./admin.css";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const { locale } = useParams<{ locale: string }>();
   const rawPath = usePathname();
-const pathname = (rawPath || "/").replace(/\/+$/, "") || "/";
-const isLogin = pathname === "/admin/login";
+  const pathname = (rawPath || "/").replace(/\/+$/, "") || "/";
+
+  // Strip the locale prefix so comparisons work regardless of language
+  const adminPath = pathname.replace(new RegExp(`^/${locale}`), "");
+  const isLogin = adminPath === "/admin/login";
+
   const [ready, setReady] = useState(false);
   const [adminName, setAdminName] = useState("");
 
@@ -18,15 +24,13 @@ const isLogin = pathname === "/admin/login";
       setReady(true);
       return;
     }
-    // Client-side guard: no token → go to login
-    const token = getToken();
-    if (!token) {
-      window.location.href = "/admin/login";
+    if (!getToken()) {
+      router.replace(`/${locale}/admin/login`);
       return;
     }
     setAdminName(getAdmin()?.name ?? "Admin");
     setReady(true);
-  }, [isLogin, pathname]);
+  }, [isLogin, adminPath, locale, router]);
 
   if (!ready) {
     return (
@@ -36,7 +40,6 @@ const isLogin = pathname === "/admin/login";
     );
   }
 
-  // Login page renders without the chrome
   if (isLogin) return <>{children}</>;
 
   return (
@@ -46,10 +49,12 @@ const isLogin = pathname === "/admin/login";
           Pizzaria<span>Con Amore</span>. <em>admin</em>
         </div>
         <nav className="ad-nav">
-          <Link href="/admin/orders" className={`ad-nav-item ${pathname.startsWith("/admin/orders") ? "active" : ""}`}>
+          <Link
+            href={`/${locale}/admin/orders`}
+            className={`ad-nav-item ${adminPath.startsWith("/admin/orders") ? "active" : ""}`}
+          >
             <OrderIcon /> Orders
           </Link>
-          {/* Future: Products, Zones, Dashboard */}
         </nav>
         <div className="ad-side-foot">
           <div className="ad-who">

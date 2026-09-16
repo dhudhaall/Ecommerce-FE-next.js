@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { api } from "../lib/adminApi";
 import {
   STATUS_TABS,
@@ -31,6 +31,8 @@ interface OrderRow {
 const POLL_MS = 25000; // background poll to detect new orders (pill only)
 
 export default function OrdersPage() {
+    const { locale } = useParams<{ locale: string }>();
+  
   const router = useRouter();
   const [tab, setTab] = useState("all");
   const [orders, setOrders] = useState<OrderRow[]>([]);
@@ -175,7 +177,7 @@ export default function OrdersPage() {
             <div
               key={o.id}
               className="ad-tr ad-row"
-              onClick={() => router.push(`/admin/orders/details?id=${o.id}`)}
+              onClick={() => router.push(`/${locale}/admin/orders/details?id=${o.id}`)}
               role="button"
             >
               <span className="ad-cell-id">
@@ -228,3 +230,4 @@ function RefreshIcon() {
     </svg>
   );
 }
+

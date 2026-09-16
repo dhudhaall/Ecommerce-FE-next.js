@@ -3,6 +3,7 @@
 // localStorage, and redirects to /admin/login on 401 (expired/invalid token).
 
 const BASE = process.env.NEXT_PUBLIC_baseURL; // e.g. http://localhost:5000/api
+console.log("BASE",BASE)
 
 export const TOKEN_KEY = "admin_token";
 export const ADMIN_KEY = "admin_user";
@@ -30,7 +31,16 @@ export function clearSession() {
 
 export function logout() {
   clearSession();
-  if (typeof window !== "undefined") window.location.href = "/admin/login";
+   redirectToLogin();
+}
+
+export function redirectToLogin() {
+  if (typeof window === "undefined") return;
+  const locale = window.location.pathname.split("/")[1] || "en";
+  const target = `/${locale}/admin/login`;
+  // Already heading there — don't restart navigation
+  if (window.location.pathname.startsWith(target)) return;
+  window.location.replace(target);
 }
 
 interface ApiOptions {
@@ -58,7 +68,7 @@ export async function api<T = any>(path: string, opts: ApiOptions = {}): Promise
   // Auth expired/invalid → clear and bounce to login
   if (res.status === 401 && auth) {
     clearSession();
-    if (typeof window !== "undefined") window.location.href = "/admin/login";
+      redirectToLogin();
     throw new Error("Session expired. Please log in again.");
   }
 
