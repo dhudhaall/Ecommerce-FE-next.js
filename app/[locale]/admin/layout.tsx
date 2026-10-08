@@ -55,6 +55,30 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           >
             <OrderIcon /> Orders
           </Link>
+          <Link
+            href={`/${locale}/admin/categories`}
+            className={`ad-nav-item ${adminPath.startsWith("/admin/categories") ? "active" : ""}`}
+          >
+            <CategoryIcon /> Categories
+          </Link>
+          <Link
+            href={`/${locale}/admin/products`}
+            className={`ad-nav-item ${adminPath.startsWith("/admin/products") ? "active" : ""}`}
+          >
+            <ProductIcon /> Products
+          </Link>
+          <Link
+            href={`/${locale}/admin/addOns`}
+            className={`ad-nav-item ${adminPath.startsWith("/admin/addOns") ? "active" : ""}`}
+          >
+            <AddonIcon /> AddOns
+          </Link>
+          <Link
+            href={`/${locale}/admin/sizes`}
+            className={`ad-nav-item ${adminPath.startsWith("/admin/sizes") ? "active" : ""}`}
+          >
+            <SizeIcon /> Sizes
+          </Link>
         </nav>
         <div className="ad-side-foot">
           <div className="ad-who">
@@ -78,6 +102,48 @@ function OrderIcon() {
       <path d="M3 4 2.5 2H1" />
       <circle cx="6" cy="20" r="1.5" />
       <circle cx="14" cy="20" r="1.5" />
+    </svg>
+  );
+}
+
+function CategoryIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+      <rect x="3" y="3" width="7" height="7" rx="1.5" />
+      <rect x="14" y="3" width="7" height="7" rx="1.5" />
+      <rect x="14" y="14" width="7" height="7" rx="1.5" />
+      <rect x="3" y="14" width="7" height="7" rx="1.5" />
+    </svg>
+  );
+}
+
+function ProductIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+      <path d="M12 2 2 7l10 5 10-5-10-5Z" />
+      <path d="m2 17 10 5 10-5" />
+      <path d="m2 12 10 5 10-5" />
+    </svg>
+  );
+}
+
+function AddonIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 8v8" />
+      <path d="M8 12h8" />
+    </svg>
+  );
+}
+
+function SizeIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+      <path d="M15 3h6v6" />
+      <path d="m21 3-7 7" />
+      <path d="M9 21H3v-6" />
+      <path d="m3 21 7-7" />
     </svg>
   );
 }
