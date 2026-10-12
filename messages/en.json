@@ -251,6 +251,7 @@
 
     "processing": "Processing…",
     "pay_now": "Pay now",
+    "continue_to_paypal": "Continue to PayPal",
     "trust_message": "You won't be charged until your order is confirmed.",
 
     "errors": {

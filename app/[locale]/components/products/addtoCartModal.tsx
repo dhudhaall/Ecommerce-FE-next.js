@@ -23,53 +23,73 @@ export default function AddToCart({ isOpen, onClose, product }: Props) {
         onClose();
     }
 
-    const addToCart = () => {
-        updateTotal(qty, selectedSize, selectedAddons);
+    const calculateItemPrice = (quantity: number, size: any, addons: any[]) => {
+        const basePrice = size ? Number(size.price) : Number(selectedProduct?.price || 0);
+        const addonsPrice = (addons || []).reduce((sum, a) => sum + Number(a?.price || 0), 0);
+        const unitPrice = basePrice + addonsPrice;
+        const total = unitPrice * quantity;
+        return { unitPrice, total };
+    };
 
-        if(selectedProduct?.sizes?.length > 0){
-            if(!selectedSize){
+    const addToCart = () => {
+        if (selectedProduct?.sizes?.length > 0) {
+            if (!selectedSize) {
                 setsizeValidationError(true);
                 return;
-            }else{
-                setsizeValidationError(false)
+            } else {
+                setsizeValidationError(false);
             }
         }
+
+        const { unitPrice, total } = calculateItemPrice(qty, selectedSize, selectedAddons);
 
         const data = {
             product: selectedProduct,
-            productId:selectedProduct.id,
+            productId: selectedProduct.id,
             size: selectedSize || null,
             addons: selectedAddons,
             quantity: qty,
-            totalPrice: totalPrice
+            unitPrice,
+            itemTotal: total,
+            totalPrice: total
         };
-      
 
-        const cart = JSON.parse(localStorage.getItem("cart")!);
-        if (cart) {
-            const existingProductIndex = cart.findIndex((item: any) => item.id === data.productId);
-            if (existingProductIndex !== -1) {
+        const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+        
+        const getAddonKey = (addonsList: any[]) =>
+            (addonsList || []).map((a: any) => a.id).sort().join(",");
 
-                cart[existingProductIndex] = data;
-            } else {
-                cart.push(data);
-            }
-            localStorage.setItem("cart", JSON.stringify(cart));
-             window.dispatchEvent(new Event("cartUpdated"));
+        const existingIndex = cart.findIndex((item: any) => {
+            const sameProduct = item.productId === data.productId || item.product?.id === data.productId;
+            const sameSize = (item.size?.id ?? null) === (data.size?.id ?? null);
+            const sameAddons = getAddonKey(item.addons) === getAddonKey(data.addons);
+            return sameProduct && sameSize && sameAddons;
+        });
+
+        if (existingIndex !== -1) {
+            const existing = cart[existingIndex];
+            const newQty = (Number(existing.quantity) || 1) + qty;
+            const newTotal = unitPrice * newQty;
+            cart[existingIndex] = {
+                ...existing,
+                quantity: newQty,
+                unitPrice,
+                itemTotal: newTotal,
+                totalPrice: newTotal
+            };
         } else {
-
-            localStorage.setItem("cart", JSON.stringify([data]));
-             window.dispatchEvent(new Event("cartUpdated"));
-
+            cart.push(data);
         }
-        closePopup();
 
-    }
+        localStorage.setItem("cart", JSON.stringify(cart));
+        window.dispatchEvent(new Event("cartUpdated"));
+        closePopup();
+    };
 
     const increaseQty = () => {
         const newQty = qty + 1;
         setQty(newQty);
-       updateTotal(newQty, selectedSize, selectedAddons);
+        updateTotal(newQty, selectedSize, selectedAddons);
     };
 
     const decreaseQty = () => {
@@ -82,51 +102,32 @@ export default function AddToCart({ isOpen, onClose, product }: Props) {
 
     const handleQtyInput = (e: any) => {
         let value = parseInt(e.target.value);
-
         if (isNaN(value) || value < 1) value = 1;
-
         setQty(value);
         updateTotal(value, selectedSize, selectedAddons);
     };
 
-    const updateTotal = (qty:number, size:any, addons:any) => {
-        let total = selectedProduct.price;
-
-        if (size) {
-            total = 0;
-            total += Number(size.price);
-        }
-
-        total = total * qty;
-        console.log("total", total);
-        if (addons.length > 0) {
-            total += addons.reduce((sum:number, a:any) => sum + Number(a.price), 0);
-        }
-        console.log("total 2", total);
+    const updateTotal = (quantity: number, size: any, addons: any[]) => {
+        const { total } = calculateItemPrice(quantity, size, addons);
         setTotalPrice(total);
     };
 
     const handleSizeChange = (size: any) => {
-       
         setSelectedSize(size);
         updateTotal(qty, size, selectedAddons);
     };
 
     const handleAddonChange = (addon: any) => {
         let updatedAddons;
-
         const exists = selectedAddons.find((a) => a.id === addon.id);
 
         if (exists) {
-            // remove addon
             updatedAddons = selectedAddons.filter((a) => a.id !== addon.id);
         } else {
-            // add addon
             updatedAddons = [...selectedAddons, addon];
         }
 
         setSelectedAddons(updatedAddons);
-
         updateTotal(qty, selectedSize, updatedAddons);
     };
 

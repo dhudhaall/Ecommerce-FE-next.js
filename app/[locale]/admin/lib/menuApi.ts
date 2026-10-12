@@ -12,6 +12,7 @@ const BASE = process.env.NEXT_PUBLIC_baseURL;
 export interface Category {
   id: number;
   name: string;
+  image?: string | null;
   /** Optional — include a _count on the backend to show usage before deleting */
   productCount?: number;
 }
@@ -70,15 +71,35 @@ function unwrap<T>(res: any, key?: string): T[] {
 
 /* ---------------- Categories ---------------- */
 
+export interface CategoryInput {
+  name: string;
+  image?: string;
+  imageFile?: File | null;
+}
+
 export const categoriesApi = {
   list: async (): Promise<Category[]> =>
     unwrap<Category>(await api("/admin/categories"), "categories"),
 
-  create: (body: { name: string }) =>
-    api<Category>("/admin/categories", { method: "POST", body }),
+  create: (body: CategoryInput) => {
+    if (body.imageFile) {
+      const fd = new FormData();
+      fd.append("name", body.name);
+      fd.append("image", body.imageFile);
+      return api<Category>("/admin/categories", { method: "POST", body: fd });
+    }
+    return api<Category>("/admin/categories", { method: "POST", body: { name: body.name, image: body.image } });
+  },
 
-  update: (id: number, body: { name: string }) =>
-    api<Category>(`/admin/categories/${id}`, { method: "PUT", body }),
+  update: (id: number, body: CategoryInput) => {
+    if (body.imageFile) {
+      const fd = new FormData();
+      fd.append("name", body.name);
+      fd.append("image", body.imageFile);
+      return api<Category>(`/admin/categories/${id}`, { method: "PUT", body: fd });
+    }
+    return api<Category>(`/admin/categories/${id}`, { method: "PUT", body: { name: body.name, image: body.image } });
+  },
 
   remove: (id: number) => api(`/admin/categories/${id}`, { method: "DELETE" }),
 };
@@ -112,49 +133,6 @@ export const productsApi = {
   remove: (id: number) => api(`/admin/products/${id}`, { method: "DELETE" }),
 };
 
-/* ---------------- Addons ---------------- */
-
-export interface AddonInput {
-  name: string;
-  price: number;
-  productId: number;
-}
-
-export const addonsApi = {
-  list: async (productId?: number | null): Promise<Addon[]> => {
-    const qs = productId ? `?productId=${productId}` : "";
-    return unwrap<Addon>(await api(`/admin/addons${qs}`), "addons");
-  },
-
-  create: (body: AddonInput) => api<Addon>("/admin/addons", { method: "POST", body }),
-
-  update: (id: number, body: AddonInput) =>
-    api<Addon>(`/admin/addons/${id}`, { method: "PUT", body }),
-
-  remove: (id: number) => api(`/admin/addons/${id}`, { method: "DELETE" }),
-};
-
-/* ---------------- Sizes ---------------- */
-
-export interface SizeInput {
-  name: string;
-  price: number;
-  productId: number;
-}
-
-export const sizesApi = {
-  list: async (productId?: number | null): Promise<Size[]> => {
-    const qs = productId ? `?productId=${productId}` : "";
-    return unwrap<Size>(await api(`/admin/sizes${qs}`), "sizes");
-  },
-
-  create: (body: SizeInput) => api<Size>("/admin/sizes", { method: "POST", body }),
-
-  update: (id: number, body: SizeInput) =>
-    api<Size>(`/admin/sizes/${id}`, { method: "PUT", body }),
-
-  remove: (id: number) => api(`/admin/sizes/${id}`, { method: "DELETE" }),
-};
 
 /* ---------------- Media Upload ---------------- */
 

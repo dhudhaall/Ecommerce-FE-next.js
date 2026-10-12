@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 
 /**
@@ -20,6 +20,26 @@ export default function OrderSuccess() {
 function SuccessContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("orderId");
+  const token = searchParams.get("token"); // PayPal approval parameter
+  const paymentIntent = searchParams.get("payment_intent");
+
+  useEffect(() => {
+    if (token) {
+      // Returning from PayPal flow
+      fetch(`${process.env.NEXT_PUBLIC_baseURL}/checkout/paypal-capture`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId, paypalOrderId: token }),
+      }).catch((e) => console.error("PayPal capture error:", e));
+    } else if (orderId) {
+      // Card / Stripe payment confirmation
+      fetch(`${process.env.NEXT_PUBLIC_baseURL}/checkout/stripe-confirm`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId, paymentIntentId: paymentIntent }),
+      }).catch((e) => console.error("Stripe confirm error:", e));
+    }
+  }, [token, orderId, paymentIntent]);
 
   const backToHome = () => {
     window.location.href = "/products";

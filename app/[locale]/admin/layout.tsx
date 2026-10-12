@@ -56,6 +56,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <OrderIcon /> Orders
           </Link>
           <Link
+            href={`/${locale}/admin/sales`}
+            className={`ad-nav-item ${adminPath.startsWith("/admin/sales") ? "active" : ""}`}
+          >
+            <SalesIcon /> Sales
+          </Link>
+          <Link
             href={`/${locale}/admin/categories`}
             className={`ad-nav-item ${adminPath.startsWith("/admin/categories") ? "active" : ""}`}
           >
@@ -66,18 +72,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             className={`ad-nav-item ${adminPath.startsWith("/admin/products") ? "active" : ""}`}
           >
             <ProductIcon /> Products
-          </Link>
-          <Link
-            href={`/${locale}/admin/addOns`}
-            className={`ad-nav-item ${adminPath.startsWith("/admin/addOns") ? "active" : ""}`}
-          >
-            <AddonIcon /> AddOns
-          </Link>
-          <Link
-            href={`/${locale}/admin/sizes`}
-            className={`ad-nav-item ${adminPath.startsWith("/admin/sizes") ? "active" : ""}`}
-          >
-            <SizeIcon /> Sizes
           </Link>
         </nav>
         <div className="ad-side-foot">
@@ -127,23 +121,10 @@ function ProductIcon() {
   );
 }
 
-function AddonIcon() {
+function SalesIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M12 8v8" />
-      <path d="M8 12h8" />
-    </svg>
-  );
-}
-
-function SizeIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
-      <path d="M15 3h6v6" />
-      <path d="m21 3-7 7" />
-      <path d="M9 21H3v-6" />
-      <path d="m3 21 7-7" />
+      <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
     </svg>
   );
 }

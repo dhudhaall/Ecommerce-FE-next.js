@@ -14,16 +14,21 @@ type Addon = {
 type CartItem = {
   productId?: string | number;
   product?: {
+    id?: string | number;
     name?: string;
     images?: any | null;
     price: number;
   };
   size?: {
+    id?: string | number;
     name?: string;
+    price?: number;
   };
   addons?: Addon[];
   quantity?: number;
+  unitPrice?: number;
   itemTotal?: number;
+  totalPrice?: number;
 };
 
 type Pricing = {
@@ -53,6 +58,20 @@ export default function CartPage() {
   const [hydrated, setHydrated] = useState(false);
   const [pricing, setPricing] = useState<Pricing | null>(null);
   const [pricingLoading, setPricingLoading] = useState(false);
+
+  /* Helper to calculate item price breakdown */
+  const getItemPrices = (item: CartItem) => {
+    const basePrice =
+      Number(item?.size?.price) || Number(item?.product?.price) || 0;
+    const addonsPrice = (item?.addons || []).reduce(
+      (sum, a) => sum + (Number(a?.price) || 0),
+      0
+    );
+    const unitPrice = basePrice + addonsPrice;
+    const qty = Number(item?.quantity) || 1;
+    const itemTotal = unitPrice * qty;
+    return { basePrice, addonsPrice, unitPrice, itemTotal };
+  };
 
   /* Load once from localStorage */
   useEffect(() => {
@@ -84,9 +103,7 @@ export default function CartPage() {
     () =>
       round2(
         cart.reduce(
-          (sum, it) =>
-            sum +
-            (Number(it?.itemTotal) || 0),
+          (sum, it) => sum + getItemPrices(it).itemTotal,
           0
         )
       ),
@@ -128,6 +145,13 @@ export default function CartPage() {
     try {
       setPricingLoading(true);
 
+      const payloadItems = items.map((it) => ({
+        productId: it.productId || it.product?.id,
+        quantity: it.quantity || 1,
+        sizeId: it.size?.id ?? null,
+        addonIds: (it.addons || []).map((a) => a.id).filter(Boolean),
+      }));
+
       const res = await fetch(
         PRICING_ENDPOINT,
         {
@@ -136,7 +160,7 @@ export default function CartPage() {
             "Content-Type":
               "application/json",
           },
-          body: JSON.stringify({ items }),
+          body: JSON.stringify({ items: payloadItems }),
           signal,
         }
       );
@@ -150,7 +174,7 @@ export default function CartPage() {
       const data = await res.json();
 
       setPricing({
-        subtotal: Number(data.subtotal),
+        subtotal: Number(data.subtotal ?? data.totalAmount ?? subtotal),
         delivery:
           data.delivery != null
             ? Number(data.delivery)
@@ -164,7 +188,7 @@ export default function CartPage() {
             ? Number(data.discount)
             : undefined,
         totalAmount: Number(
-          data.totalAmount
+          data.totalAmount ?? data.subtotal ?? subtotal
         ),
       });
     } catch (err) {
@@ -178,17 +202,6 @@ export default function CartPage() {
       setPricingLoading(false);
     }
   }
-
-  /* Per-unit price */
-  const unitPrice = (item: CartItem) => {
-    const q =
-      Number(item?.quantity) || 1;
-
-    const tp =
-      Number(item?.itemTotal) || 0;
-
-    return q > 0 ? tp / q : tp;
-  };
 
   /* Change quantity */
   const changeQty = (
@@ -205,12 +218,17 @@ export default function CartPage() {
             delta
         );
 
+        const { unitPrice, itemTotal } = getItemPrices({
+          ...item,
+          quantity: nextQty,
+        });
+
         return {
           ...item,
           quantity: nextQty,
-          totalPrice: round2(
-            unitPrice(item) * nextQty
-          ),
+          unitPrice,
+          itemTotal,
+          totalPrice: itemTotal,
         };
       })
     );
@@ -327,6 +345,8 @@ export default function CartPage() {
                     item?.quantity
                   ) || 1;
 
+                const { unitPrice, itemTotal } = getItemPrices(item);
+
                 return (
                   <article
                     className="cart-item"
@@ -375,6 +395,7 @@ export default function CartPage() {
                                 item.size
                                   .name
                               }
+                              {item.size.price != null && ` (€${item.size.price})`}
                             </span>
                           )}
 
@@ -389,6 +410,7 @@ export default function CartPage() {
                               >
                                 +{" "}
                                 {a.name}
+                                {a.price != null && ` (€${a.price})`}
                               </span>
                             )
                           )}
@@ -397,11 +419,11 @@ export default function CartPage() {
                       )}
 
                       <div className="cart-price">
-                        {euro(
-                          Number(
-                            item?.product
-                              ?.price
-                          ) || 0
+                        {euro(unitPrice)}
+                        {qty > 1 && (
+                          <span className="text-sm text-gray-500 font-normal ml-2">
+                            ({euro(itemTotal)} total)
+                          </span>
                         )}
                       </div>
 

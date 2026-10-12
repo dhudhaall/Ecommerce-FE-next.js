@@ -100,8 +100,15 @@ export default function Checkout() {
   const [cartLoading, setCartLoading] = useState(true);
   const [cartError, setCartError] = useState("");
 
-  // Delivery zones
+  // Delivery zones & distance calculation
   const [zones, setZones] = useState<Zone[] | null>(null);
+  const [feeResult, setFeeResult] = useState<{
+    deliverable: boolean;
+    deliveryFee: number;
+    distanceKm?: number;
+    message?: string;
+  } | null>(null);
+  const [feeLoading, setFeeLoading] = useState(false);
 
   // Submission
   const [submitting, setSubmitting] = useState(false);
@@ -157,43 +164,48 @@ export default function Checkout() {
   };
 
   /* =========================================================
-     Fetch delivery zones
+     Dynamic Delivery Fee & Distance Calculation
   ========================================================= */
 
   useEffect(() => {
-    (async () => {
+    if (deliveryType !== "delivery") {
+      setFeeResult(null);
+      return;
+    }
+    const pc = form.postalCode.trim();
+    if (pc.length < 3) {
+      setFeeResult(null);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setFeeLoading(true);
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_baseURL}/delivery-zones`, {
-          cache: "no-store",
+        const res = await fetch(`${process.env.NEXT_PUBLIC_baseURL}/delivery-zones/calculate-fee`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            postalCode: pc,
+            city: form.city.trim(),
+            address: form.address.trim(),
+          }),
         });
-        if (!res.ok) throw new Error();
-       const data = await res.json();
-      setZones(data.zones ?? []);
-      } catch {
-        // Empty list = lookup unavailable; don't block ordering, server revalidates
-        setZones([]);
+
+        if (res.ok) {
+          const data = await res.json();
+          setFeeResult(data);
+        }
+      } catch (err) {
+        console.error("Fee calculation error:", err);
+      } finally {
+        setFeeLoading(false);
       }
-    })();
-  }, []);
+    }, 500);
 
-  /* =========================================================
-     Zone matching
-  ========================================================= */
-const zone = useMemo(() => {
-  if (deliveryType !== "delivery" || !zones?.length) return null;
-  const pc = normalize(form.postalCode);
-  if (!pc) return null;
+    return () => clearTimeout(timer);
+  }, [form.postalCode, form.city, form.address, deliveryType]);
 
-  return (
-    zones.find(
-      (z) =>
-        normalize(z.mainPostalCode) === pc ||
-        z.coveredPrefixes?.some((p) => normalize(p) === pc)
-    ) ?? null
-  );
-}, [zones, form.postalCode, deliveryType]);
-
-  const deliveryFee = deliveryType === "delivery" ? zone?.deliveryFee ?? 0 : 0;
+  const deliveryFee = deliveryType === "delivery" && feeResult?.deliverable ? feeResult.deliveryFee : 0;
   const grandTotal = totalAmount + deliveryFee;
 
   /* =========================================================
@@ -257,14 +269,6 @@ const zone = useMemo(() => {
     }
   };
 
-  // Format is valid, zones are loaded, but no match → out of delivery area
-  const outOfZone =
-    deliveryType === "delivery" &&
-    !!zones?.length &&
-    !!form.postalCode.trim() &&
-    !validateField("postalCode", form.postalCode) &&
-    !zone;
-
   const validate = (): boolean => {
     const newErrors: FormErrors = {};
 
@@ -273,9 +277,9 @@ const zone = useMemo(() => {
       if (message) newErrors[field] = message;
     });
 
-    // Zone check — only when we actually have a zone list
-    if (deliveryType === "delivery" && zones?.length && !newErrors.postalCode && !zone) {
-      newErrors.postalCode = t("validation.postal_out_of_zone");
+    // Zone & Distance check
+    if (deliveryType === "delivery" && !newErrors.postalCode && feeResult && !feeResult.deliverable) {
+      newErrors.postalCode = feeResult.message || "We do not deliver to your area.";
     }
 
     setErrors(newErrors);
@@ -288,12 +292,6 @@ const zone = useMemo(() => {
       );
       el?.scrollIntoView({ behavior: "smooth", block: "center" });
       el?.focus({ preventScroll: true });
-      return false;
-    }
-
-    // Minimum order for this zone
-    if (deliveryType === "delivery" && zone?.minOrder != null && totalAmount < zone.minOrder) {
-      setApiError(t("errors.below_min_order", { amount: money(zone.minOrder) }));
       return false;
     }
 
@@ -391,8 +389,8 @@ const zone = useMemo(() => {
 
       const data = await res.json();
 
-      if (!data.success) {
-        setApiError(data.message || t("errors.checkout_failed"));
+      if (!res.ok) {
+        setApiError(data.error || data.message || t("errors.checkout_failed"));
         setSubmitting(false);
         return;
       }
@@ -404,9 +402,11 @@ const zone = useMemo(() => {
         return;
       }
 
-      if (data.paymentType === "paypal") {
-        window.location.href = data.approvalUrl;
-        return;
+      if (data.paymentType === "paypal" || data.approvalUrl) {
+        if (data.approvalUrl) {
+          window.location.href = data.approvalUrl;
+          return;
+        }
       }
 
       setSubmitting(false);
@@ -640,9 +640,17 @@ const zone = useMemo(() => {
                   value={form.postalCode}
                   error={
                     errors.postalCode ||
-                    (outOfZone ? t("validation.postal_out_of_zone") : undefined)
+                    (deliveryType === "delivery" && feeResult && !feeResult.deliverable
+                      ? feeResult.message || "We do not deliver to your area."
+                      : undefined)
                   }
-                  hint={zone ? t("zone_ok", {area: zone.areaName, fee: money(zone.deliveryFee), minOrder:zone.minOrder }) : undefined}
+                  hint={
+                    feeLoading
+                      ? "Calculating delivery fee..."
+                      : deliveryType === "delivery" && feeResult?.deliverable
+                      ? `${feeResult.message} • Delivery Fee: ${money(feeResult.deliveryFee)}`
+                      : undefined
+                  }
                   onChange={handleChange}
                   onBlur={handleBlur}
                 />
@@ -737,8 +745,10 @@ const zone = useMemo(() => {
                   <span>
                     {deliveryType === "pickup"
                       ? t("free")
-                      : !zone
+                      : !feeResult
                       ? t("enter_postal_code")
+                      : !feeResult.deliverable
+                      ? "Out of area"
                       : deliveryFee === 0
                       ? t("free")
                       : money(deliveryFee)}
@@ -753,16 +763,6 @@ const zone = useMemo(() => {
                   <span className="co-grand-lbl">{t("grand_total")}</span>
                   <span className="co-grand-val">{money(grandTotal)}</span>
                 </div>
-
-                {/* Minimum order notice */}
-
-                {deliveryType === "delivery" &&
-                  zone?.minOrder != null &&
-                  totalAmount < zone.minOrder && (
-                    <div className="co-alert" role="alert">
-                      {t("errors.below_min_order", { amount: money(zone.minOrder) })}
-                    </div>
-                  )}
 
                 {/* Payment method */}
 

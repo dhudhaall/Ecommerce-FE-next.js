@@ -52,7 +52,11 @@ interface ApiOptions {
 export async function api<T = any>(path: string, opts: ApiOptions = {}): Promise<T> {
   const { method = "GET", body, auth = true } = opts;
 
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
+  const headers: Record<string, string> = {};
+  if (!isFormData) {
+    headers["Content-Type"] = "application/json";
+  }
   if (auth) {
     const token = getToken();
     if (token) headers.Authorization = `Bearer ${token}`;
@@ -61,7 +65,7 @@ export async function api<T = any>(path: string, opts: ApiOptions = {}): Promise
   const res = await fetch(`${BASE}${path}`, {
     method,
     headers,
-    body: body ? JSON.stringify(body) : undefined,
+    body: isFormData ? body : (body ? JSON.stringify(body) : undefined),
     cache: "no-store",
   });
 

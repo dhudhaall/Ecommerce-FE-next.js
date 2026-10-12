@@ -141,45 +141,63 @@ export default function Home() {
 
   /* -------- Handlers -------- */
 
+  const [searching, setSearching] = useState(false);
+
+  /* -------- Handlers -------- */
+
   const handleInputChange = (value: string) => {
     setQuery(value);
     setError("");
     setDropdownOpen(true);
 
-    // Auto-resolve street-level codes to their main area
     const matched = matchZone(zones, value);
-
     setSelectedZone(matched);
   };
 
   const handleSelectZone = (zone: Zone) => {
     setSelectedZone(zone);
-
-    setQuery(
-      `${zone.areaName} — ${zone.mainPostalCode}`
-    );
-
+    setQuery(zone.mainPostalCode);
     setError("");
     setDropdownOpen(false);
   };
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
     setDropdownOpen(false);
+    const code = query.trim();
 
-    if (selectedZone) {
-      window.location.href = `/products?zoneId=${selectedZone.id}`;
-      return;
-    }
-
-    if (!query.trim()) {
+    if (!code) {
       setError(translation("search.error_empty"));
       return;
     }
 
-    setError(translation("search.error_not_available"));
-  };
+    setSearching(true);
+    setError("");
 
-  const money = (n: number) => `$${n.toFixed(2)}`;
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_baseURL}/delivery-zones/calculate-fee`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ postalCode: code }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (data.deliverable) {
+        localStorage.setItem("user_postal_code", code);
+        window.location.href = "/products";
+      } else {
+        setError(data.message || translation("search.error_not_available"));
+      }
+    } catch (err) {
+      console.error("Postal code search error:", err);
+      setError("Error verifying postal code. Please try again.");
+    } finally {
+      setSearching(false);
+    }
+  };
 
   /* -------- Render -------- */
 
@@ -241,7 +259,7 @@ export default function Home() {
                     : translation("search.placeholder")
                 }
                 value={query}
-                disabled={zonesLoading}
+                disabled={zonesLoading || searching}
                 onChange={(e) =>
                   handleInputChange(e.target.value)
                 }
@@ -263,9 +281,9 @@ export default function Home() {
                 type="button"
                 className="hm-search-btn"
                 onClick={handleSearch}
-                disabled={zonesLoading}
+                disabled={zonesLoading || searching}
               >
-                {translation("search.button")}
+                {searching ? "..." : translation("search.button")}
               </button>
 
             </div>
@@ -338,13 +356,6 @@ export default function Home() {
 
                         </span>
 
-                        <span className="hm-dd-fee">
-                          {money(z.deliveryFee)}{" "}
-                          {translation(
-                            "search.delivery"
-                          )}
-                        </span>
-
                       </button>
                     ))}
 
@@ -370,32 +381,6 @@ export default function Home() {
                 role="alert"
               >
                 {error}
-              </p>
-            )}
-
-            {!error && selectedZone && (
-              <p
-                className="hm-ok"
-                role="status"
-              >
-                ✓{" "}
-                {translation("search.success", {
-                  area: selectedZone.areaName,
-                  fee: money(
-                    selectedZone.deliveryFee
-                  ),
-                  minOrder:
-                    selectedZone.minOrder > 0
-                      ? translation(
-                          "search.min_order",
-                          {
-                            amount: money(
-                              selectedZone.minOrder
-                            ),
-                          }
-                        )
-                      : "",
-                })}
               </p>
             )}
 

@@ -14,6 +14,14 @@ import {
   TrashIcon,
 } from "../components/MenuUI";
 
+const IMAGE_BASE = process.env.NEXT_PUBLIC_baseURL_images || "http://localhost:3000";
+
+function getImageUrl(url?: string | null) {
+  if (!url) return null;
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  return `${IMAGE_BASE}${url.startsWith("/") ? "" : "/"}${url}`;
+}
+
 export default function CategoriesPage() {
   const [rows, setRows] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -91,7 +99,33 @@ export default function CategoriesPage() {
           {rows.map((c) => (
             <div key={c.id} className="mn-tr mn-row mn-cols-cat">
               <span className="mn-id">#{c.id}</span>
-              <span className="mn-name">{c.name}</span>
+              <span className="mn-name" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                {c.image ? (
+                  <img
+                    src={getImageUrl(c.image)!}
+                    alt={c.name}
+                    style={{ width: 36, height: 36, borderRadius: 6, objectFit: "cover" }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: 6,
+                      background: "#f1f5f9",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "#94a3b8",
+                      fontSize: 13,
+                      fontWeight: 600,
+                    }}
+                  >
+                    {c.name.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                {c.name}
+              </span>
               <span className="mn-sub">
                 {c.productCount != null ? `${c.productCount} product${c.productCount === 1 ? "" : "s"}` : "—"}
               </span>
@@ -156,9 +190,19 @@ function CategoryForm({
   onSaved: () => void;
 }) {
   const [name, setName] = useState(category?.name ?? "");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(getImageUrl(category?.image));
   const [fieldError, setFieldError] = useState("");
   const [apiError, setApiError] = useState("");
   const [saving, setSaving] = useState(false);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
 
   const save = async () => {
     const value = name.trim();
@@ -173,8 +217,11 @@ function CategoryForm({
     setSaving(true);
 
     try {
-      if (category) await categoriesApi.update(category.id, { name: value });
-      else await categoriesApi.create({ name: value });
+      if (category) {
+        await categoriesApi.update(category.id, { name: value, imageFile });
+      } else {
+        await categoriesApi.create({ name: value, imageFile });
+      }
       onSaved();
     } catch (err: any) {
       setApiError(err.message || "Couldn't save the category.");
@@ -197,7 +244,7 @@ function CategoryForm({
         </>
       }
     >
-      <div className="mn-grid">
+      <div className="mn-grid" style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
         {apiError && <div className="mn-alert">{apiError}</div>}
 
         <TextField
@@ -210,6 +257,44 @@ function CategoryForm({
           onChange={(e) => setName(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && save()}
         />
+
+        <div className="mn-field">
+          <label style={{ display: "block", marginBottom: 6, fontSize: 14, fontWeight: 500 }}>
+            Category Image
+          </label>
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            {imagePreview ? (
+              <img
+                src={imagePreview}
+                alt="Preview"
+                style={{ width: 56, height: 56, borderRadius: 8, objectFit: "cover", border: "1px solid #e2e8f0" }}
+              />
+            ) : (
+              <div
+                style={{
+                  width: 56,
+                  height: 56,
+                  borderRadius: 8,
+                  background: "#f8fafc",
+                  border: "1px dashed #cbd5e1",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#94a3b8",
+                  fontSize: 11,
+                }}
+              >
+                No Image
+              </div>
+            )}
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              style={{ fontSize: 13 }}
+            />
+          </div>
+        </div>
       </div>
     </Modal>
   );

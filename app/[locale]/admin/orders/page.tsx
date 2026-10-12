@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { api } from "../lib/adminApi";
+import { api, getToken } from "../lib/adminApi";
 import {
   STATUS_TABS,
   STATUS_LABEL,
@@ -28,34 +28,84 @@ interface OrderRow {
   createdAt: string;
 }
 
-const POLL_MS = 25000; // background poll to detect new orders (pill only)
+/* Synthesize a loud, clear 3-ring restaurant alarm chime using Web Audio API */
+function playAlarmSound() {
+  try {
+    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+
+    if (ctx.state === "suspended") {
+      ctx.resume();
+    }
+
+    const playTone = (freq: number, startTime: number, duration: number) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freq, ctx.currentTime + startTime);
+
+      gain.gain.setValueAtTime(0, ctx.currentTime + startTime);
+      gain.gain.linearRampToValueAtTime(0.8, ctx.currentTime + startTime + 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + startTime + duration);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(ctx.currentTime + startTime);
+      osc.stop(ctx.currentTime + startTime + duration);
+    };
+
+    // 3 loud bell rings
+    [0, 0.45, 0.9].forEach((delay) => {
+      playTone(880, delay, 0.35); // High A5
+      playTone(1046.5, delay + 0.12, 0.45); // High C6
+    });
+  } catch (err) {
+    console.error("Failed to play alarm sound:", err);
+  }
+}
 
 export default function OrdersPage() {
-    const { locale } = useParams<{ locale: string }>();
-  
+  const { locale } = useParams<{ locale: string }>();
+
   const router = useRouter();
   const [tab, setTab] = useState("all");
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // New-order detection
+  // New-order detection & Alarm state
   const [newCount, setNewCount] = useState(0);
+  const [latestOrder, setLatestOrder] = useState<OrderRow | null>(null);
+  const [soundEnabled, setSoundEnabled] = useState(true);
   const knownIds = useRef<Set<number>>(new Set());
   const firstLoad = useRef(true);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const alarmIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const activeTab = STATUS_TABS.find((t) => t.key === tab)!;
+
+  // Request browser Notification permission on mount if supported
+  useEffect(() => {
+    if (typeof window !== "undefined" && "Notification" in window) {
+      if (Notification.permission === "default") {
+        Notification.requestPermission().catch(() => {});
+      }
+    }
+  }, []);
 
   /* -------- Load (visible) -------- */
   const load = async () => {
     setLoading(true);
     setError("");
+    stopAlarmRinging();
     try {
       const rows = await fetchRows();
       setOrders(rows);
       rows.forEach((o) => knownIds.current.add(o.id));
       setNewCount(0);
+      setLatestOrder(null);
     } catch (err: any) {
       setError(err.message || "Failed to load orders.");
     } finally {
@@ -64,37 +114,44 @@ export default function OrdersPage() {
     }
   };
 
-  /* -------- Fetch rows for the current tab --------
-   * The API filters one status at a time; for the grouped "New" tab we
-   * request its primary status and filter the rest client-side. */
+  /* -------- Fetch rows for the current tab -------- */
   const fetchRows = async (): Promise<OrderRow[]> => {
     const statuses = activeTab.statuses;
     const params = new URLSearchParams({ limit: "100" });
-    // Single-status tab → filter server-side; grouped tab → filter client-side below
     if (statuses && statuses.length === 1) params.set("status", statuses[0]);
 
     const data = await api<{ data: OrderRow[] }>(`/admin/orders?${params.toString()}`);
-    console.log("Fetched orders:", data.data);
-    let rows = data.data;
+    let rows = data.data || [];
     if (statuses && statuses.length > 1) {
       rows = rows.filter((o) => statuses.includes(o.status));
     }
     return rows;
   };
 
-  /* -------- Background poll: detect new orders without disrupting the view -------- */
-  const poll = async () => {
-    try {
-      // Always poll the full unfiltered list to catch brand-new orders
-      const data = await api<{ orders: OrderRow[] }>(`/admin/orders?limit=100`);
-      const fresh = data.orders.filter((o) => !knownIds.current.has(o.id));
-      if (fresh.length > 0 && !firstLoad.current) {
-        setNewCount((c) => c + fresh.length);
-        // Chime — browsers require prior user interaction; ignore autoplay errors
-        audioRef.current?.play().catch(() => {});
-      }
-    } catch {
-      /* silent — poll failures shouldn't disrupt the admin */
+  const stopAlarmRinging = () => {
+    if (alarmIntervalRef.current) {
+      clearInterval(alarmIntervalRef.current);
+      alarmIntervalRef.current = null;
+    }
+  };
+
+  const triggerNewOrderAlarm = (freshOrders: OrderRow[]) => {
+    if (soundEnabled) {
+      playAlarmSound();
+      stopAlarmRinging();
+      // Repeat ring sound every 3.5s while unhandled
+      alarmIntervalRef.current = setInterval(() => {
+        playAlarmSound();
+      }, 3500);
+    }
+
+    // Show desktop notification if available
+    if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
+      const latest = freshOrders[0];
+      new Notification("🔔 New Order Received!", {
+        body: `Order #${latest.id} - ${latest.customerName || "Customer"} (${money(latest.totalAmount, latest.currency)})`,
+        icon: "/images/web-logo.avif",
+      });
     }
   };
 
@@ -103,16 +160,80 @@ export default function OrdersPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
 
+  /* -------- Real-time stream (Server-Sent Events) --------
+   * Only triggers and updates when a new order arrives, completely eliminating polling! */
   useEffect(() => {
-    const t = setInterval(poll, POLL_MS);
-    return () => clearInterval(t);
+    const token = getToken();
+    if (!token) return;
+
+    const streamUrl = `${process.env.NEXT_PUBLIC_baseURL}/admin/orders/stream?token=${encodeURIComponent(token)}`;
+    const eventSource = new EventSource(streamUrl);
+
+    eventSource.onmessage = (event) => {
+      try {
+        const payload = JSON.parse(event.data);
+
+        if (payload.type === "new_order" && payload.order) {
+          const newOrder = payload.order;
+          if (!knownIds.current.has(newOrder.id)) {
+            knownIds.current.add(newOrder.id);
+            setNewCount((c) => c + 1);
+            setLatestOrder(newOrder);
+            triggerNewOrderAlarm([newOrder]);
+
+            // Auto-fetch updated list to show new order immediately
+            fetchRows().then((rows) => {
+              setOrders(rows);
+            }).catch(() => {});
+          }
+        } else if (payload.type === "status_updated") {
+          fetchRows().then((rows) => {
+            setOrders(rows);
+          }).catch(() => {});
+        }
+      } catch {
+        // Heartbeat or non-json message
+      }
+    };
+
+    return () => {
+      eventSource.close();
+      stopAlarmRinging();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [soundEnabled, tab]);
+
+  const handleTestSound = () => {
+    playAlarmSound();
+  };
 
   return (
     <div className="ad-page">
-      {/* tiny embedded chime (base64 blip) */}
-      <audio ref={audioRef} src="data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=" preload="auto" />
+      {/* Alarm Alert Banner */}
+      {newCount > 0 && (
+        <div className="mb-6 p-4 rounded-xl bg-red-600 text-white flex items-center justify-between shadow-lg animate-bounce">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">🚨</span>
+            <div>
+              <h3 className="font-bold text-base">
+                NEW ORDER ARRIVED! ({newCount} new {newCount === 1 ? "order" : "orders"})
+              </h3>
+              {latestOrder && (
+                <p className="text-xs text-red-100">
+                  Latest: #{latestOrder.id} from {latestOrder.customerName} ({money(latestOrder.totalAmount, latestOrder.currency)})
+                </p>
+              )}
+            </div>
+          </div>
+          <button
+            type="button"
+            className="px-4 py-2 bg-white text-red-700 font-bold rounded-lg hover:bg-red-50 transition shadow"
+            onClick={load}
+          >
+            Stop Alarm & Refresh View
+          </button>
+        </div>
+      )}
 
       <div className="ad-page-head">
         <div>
@@ -120,6 +241,20 @@ export default function OrdersPage() {
           <p className="ad-page-sub">Manage and prepare incoming orders</p>
         </div>
         <div className="ad-head-actions">
+          <button
+            type="button"
+            className={`ad-btn ${soundEnabled ? "ghost" : "ghost text-gray-400"}`}
+            onClick={() => {
+              const next = !soundEnabled;
+              setSoundEnabled(next);
+              if (next) handleTestSound();
+              else stopAlarmRinging();
+            }}
+            title="Toggle or test alarm sound"
+          >
+            {soundEnabled ? "🔔 Alarm: ON (Test)" : "🔕 Alarm: OFF"}
+          </button>
+
           {newCount > 0 && (
             <button type="button" className="ad-newpill" onClick={load}>
               <span className="ad-pulse" /> {newCount} new order{newCount > 1 ? "s" : ""} · tap to load

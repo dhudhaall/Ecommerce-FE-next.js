@@ -67,10 +67,8 @@ export function StripeCardSection({ grandTotal, validateForm, buildPayload }: St
  
       // 5) Paid (or processing) — go to the success page
       if (paymentIntent && ["succeeded", "processing"].includes(paymentIntent.status)) {
-       
         localStorage.removeItem('cart');
-    
-        window.location.href = `/success?orderId=${orderId}`;
+        window.location.href = `/success?orderId=${orderId}&payment_intent=${paymentIntent?.id || ""}`;
       } else {
         setCardError("Payment was not completed. Please try again.");
       }

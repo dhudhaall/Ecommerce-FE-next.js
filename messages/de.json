@@ -250,6 +250,7 @@
 
     "processing": "Wird verarbeitet…",
     "pay_now": "Jetzt bezahlen",
+    "continue_to_paypal": "Weiter zu PayPal",
     "trust_message": "Ihre Zahlung wird erst verarbeitet, wenn Ihre Bestellung bestätigt wurde.",
 
     "errors": {
