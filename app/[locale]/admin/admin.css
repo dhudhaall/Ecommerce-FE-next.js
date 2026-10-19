@@ -889,9 +889,113 @@
 }
 
 /* Column layouts per screen */
-.mn-cols-cat { grid-template-columns: 70px 1fr 140px 100px; }
+.mn-cols-cat { grid-template-columns: 44px 70px 1fr 140px 100px; }
 .mn-cols-prod { grid-template-columns: 70px 1.6fr 1fr 110px 110px 100px; }
 .mn-cols-opt { grid-template-columns: 70px 1.4fr 1.2fr 110px 100px; }
+
+/* Drag and Drop & Sorting */
+.mn-drag-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  color: var(--ad-muted);
+  cursor: grab;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+.mn-drag-handle:hover {
+  background: var(--ad-surface-alt);
+  color: var(--ad-text);
+}
+.mn-drag-handle:active {
+  cursor: grabbing;
+}
+.mn-row.is-dragging {
+  opacity: 0.35;
+  background: var(--ad-surface-alt);
+}
+.mn-row.is-drag-over-top {
+  box-shadow: inset 0 3px 0 0 var(--ad-primary);
+}
+.mn-row.is-drag-over-bottom {
+  box-shadow: inset 0 -3px 0 0 var(--ad-primary);
+}
+.mn-th-sortable {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--ad-muted);
+  transition: color 0.15s;
+}
+.mn-th-sortable:hover {
+  color: var(--ad-text);
+}
+.mn-th-sortable.active {
+  color: var(--ad-primary);
+}
+.mn-sort-arrow {
+  display: inline-block;
+  font-size: 11px;
+  line-height: 1;
+}
+.mn-sort-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px;
+  background: var(--ad-card);
+  border: 1px solid var(--ad-line);
+  border-radius: 10px;
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+.mn-sort-toolbar-label {
+  color: var(--ad-muted);
+  font-size: 12px;
+  font-weight: 500;
+}
+.mn-sort-pill {
+  border: 1px solid var(--ad-line);
+  background: var(--ad-surface);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ad-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.mn-sort-pill:hover {
+  border-color: var(--ad-primary);
+  color: var(--ad-text);
+}
+.mn-sort-pill.active {
+  background: var(--ad-primary);
+  border-color: var(--ad-primary);
+  color: #fff;
+}
+.mn-reorder-hint {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--ad-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 
 .mn-id {
   font-weight: 600;

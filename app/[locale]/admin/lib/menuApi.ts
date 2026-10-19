@@ -13,6 +13,7 @@ export interface Category {
   id: number;
   name: string;
   image?: string | null;
+  order?: number;
   /** Optional — include a _count on the backend to show usage before deleting */
   productCount?: number;
 }
@@ -80,6 +81,12 @@ export interface CategoryInput {
 export const categoriesApi = {
   list: async (): Promise<Category[]> =>
     unwrap<Category>(await api("/admin/categories"), "categories"),
+
+  reorder: (orderedIds: number[]) =>
+    api<{ message: string }>("/admin/categories/reorder", {
+      method: "PUT",
+      body: { orderedIds },
+    }),
 
   create: (body: CategoryInput) => {
     if (body.imageFile) {

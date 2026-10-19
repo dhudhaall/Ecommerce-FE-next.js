@@ -31,6 +31,17 @@ export default function CategoriesPage() {
   const [deleting, setDeleting] = useState<Category | null>(null);
   const [busy, setBusy] = useState(false);
 
+  // Sorting and Drag & Drop state
+  type SortField = "custom" | "id" | "name" | "productCount";
+  type SortDirection = "asc" | "desc";
+  const [sortField, setSortField] = useState<SortField>("custom");
+  const [sortDir, setSortDir] = useState<SortDirection>("asc");
+
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
+  const [dragOverPos, setDragOverPos] = useState<"top" | "bottom" | null>(null);
+  const [saveStatus, setSaveStatus] = useState<string>("");
+
   const load = async () => {
     setLoading(true);
     setError("");
@@ -62,18 +73,161 @@ export default function CategoriesPage() {
     }
   };
 
+  const handleHeaderSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDir((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortField(field);
+      setSortDir(field === "productCount" ? "desc" : "asc");
+    }
+  };
+
+  const sortedRows = [...rows].sort((a, b) => {
+    if (sortField === "custom") return 0; // Natural persisted order
+    if (sortField === "id") {
+      return sortDir === "asc" ? a.id - b.id : b.id - a.id;
+    }
+    if (sortField === "name") {
+      return sortDir === "asc"
+        ? a.name.localeCompare(b.name)
+        : b.name.localeCompare(a.name);
+    }
+    if (sortField === "productCount") {
+      const ca = a.productCount ?? 0;
+      const cb = b.productCount ?? 0;
+      return sortDir === "asc" ? ca - cb : cb - ca;
+    }
+    return 0;
+  });
+
+  /* Drag and Drop handlers */
+  const onDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIdx(index);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", `${index}`);
+  };
+
+  const onDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    if (draggedIdx === null || draggedIdx === index) return;
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const midY = rect.top + rect.height / 2;
+    const pos = e.clientY < midY ? "top" : "bottom";
+
+    setDragOverIdx(index);
+    setDragOverPos(pos);
+  };
+
+  const onDragLeave = () => {
+    // Only reset if leaving the row entirely
+  };
+
+  const onDrop = async (e: React.DragEvent, targetIndex: number) => {
+    e.preventDefault();
+    if (draggedIdx === null || draggedIdx === targetIndex) {
+      setDraggedIdx(null);
+      setDragOverIdx(null);
+      setDragOverPos(null);
+      return;
+    }
+
+    const currentList = [...sortedRows];
+    const [movedItem] = currentList.splice(draggedIdx, 1);
+
+    let insertAt = targetIndex;
+    if (draggedIdx < targetIndex && dragOverPos === "top") {
+      insertAt = targetIndex - 1;
+    } else if (draggedIdx > targetIndex && dragOverPos === "bottom") {
+      insertAt = targetIndex + 1;
+    }
+    insertAt = Math.max(0, Math.min(currentList.length, insertAt));
+    currentList.splice(insertAt, 0, movedItem);
+
+    // Apply immediate local state update & switch to custom sort mode
+    setRows(currentList);
+    setSortField("custom");
+    setSortDir("asc");
+    setDraggedIdx(null);
+    setDragOverIdx(null);
+    setDragOverPos(null);
+
+    // Persist to database
+    setSaveStatus("Saving order...");
+    try {
+      await categoriesApi.reorder(currentList.map((c) => c.id));
+      setSaveStatus("Order saved ✓");
+      setTimeout(() => setSaveStatus(""), 2000);
+    } catch (err: any) {
+      setError(err.message || "Failed to save category order.");
+      setSaveStatus("");
+    }
+  };
+
+  const onDragEnd = () => {
+    setDraggedIdx(null);
+    setDragOverIdx(null);
+    setDragOverPos(null);
+  };
+
   return (
     <div className="mn-page">
       <div className="mn-head">
         <div>
           <h1>Categories</h1>
-          <p>Group products into the sections customers browse</p>
+          <p>Group products into sections and order them for customer storefront</p>
         </div>
         <div className="mn-head-actions">
           <button type="button" className="mn-btn primary" onClick={() => setEditing("new")}>
             <PlusIcon /> Add category
           </button>
         </div>
+      </div>
+
+      {/* Sorting toolbar */}
+      <div className="mn-sort-toolbar">
+        <span className="mn-sort-toolbar-label">Sort by:</span>
+        <button
+          type="button"
+          className={`mn-sort-pill ${sortField === "custom" ? "active" : ""}`}
+          onClick={() => {
+            setSortField("custom");
+            setSortDir("asc");
+          }}
+          title="Drag and drop rows to customize storefront order"
+        >
+          Custom Order (Drag & Drop)
+        </button>
+        <button
+          type="button"
+          className={`mn-sort-pill ${sortField === "name" ? "active" : ""}`}
+          onClick={() => handleHeaderSort("name")}
+        >
+          Name {sortField === "name" ? (sortDir === "asc" ? "↑" : "↓") : ""}
+        </button>
+        <button
+          type="button"
+          className={`mn-sort-pill ${sortField === "productCount" ? "active" : ""}`}
+          onClick={() => handleHeaderSort("productCount")}
+        >
+          Products {sortField === "productCount" ? (sortDir === "asc" ? "↑" : "↓") : ""}
+        </button>
+        <button
+          type="button"
+          className={`mn-sort-pill ${sortField === "id" ? "active" : ""}`}
+          onClick={() => handleHeaderSort("id")}
+        >
+          ID {sortField === "id" ? (sortDir === "asc" ? "↑" : "↓") : ""}
+        </button>
+
+        <span className="mn-reorder-hint">
+          {saveStatus ? (
+            <span style={{ color: "var(--ad-primary)", fontWeight: 600 }}>{saveStatus}</span>
+          ) : (
+            <span>⠿ Drag rows or handles to reorder</span>
+          )}
+        </span>
       </div>
 
       <ListState
@@ -90,65 +244,129 @@ export default function CategoriesPage() {
       >
         <div className="mn-table">
           <div className="mn-tr mn-th mn-cols-cat">
-            <span>ID</span>
-            <span>Name</span>
-            <span>Products</span>
+            <span style={{ textAlign: "center", color: "var(--ad-muted)" }}>⠿</span>
+            <button
+              type="button"
+              className={`mn-th-sortable ${sortField === "id" ? "active" : ""}`}
+              onClick={() => handleHeaderSort("id")}
+            >
+              ID
+              <span className="mn-sort-arrow">
+                {sortField === "id" ? (sortDir === "asc" ? "▲" : "▼") : "⇅"}
+              </span>
+            </button>
+            <button
+              type="button"
+              className={`mn-th-sortable ${sortField === "name" ? "active" : ""}`}
+              onClick={() => handleHeaderSort("name")}
+            >
+              Name
+              <span className="mn-sort-arrow">
+                {sortField === "name" ? (sortDir === "asc" ? "▲" : "▼") : "⇅"}
+              </span>
+            </button>
+            <button
+              type="button"
+              className={`mn-th-sortable ${sortField === "productCount" ? "active" : ""}`}
+              onClick={() => handleHeaderSort("productCount")}
+            >
+              Products
+              <span className="mn-sort-arrow">
+                {sortField === "productCount" ? (sortDir === "asc" ? "▲" : "▼") : "⇅"}
+              </span>
+            </button>
             <span />
           </div>
 
-          {rows.map((c) => (
-            <div key={c.id} className="mn-tr mn-row mn-cols-cat">
-              <span className="mn-id">#{c.id}</span>
-              <span className="mn-name" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                {c.image ? (
-                  <img
-                    src={getImageUrl(c.image)!}
-                    alt={c.name}
-                    style={{ width: 36, height: 36, borderRadius: 6, objectFit: "cover" }}
-                  />
-                ) : (
-                  <div
-                    style={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: 6,
-                      background: "#f1f5f9",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: "#94a3b8",
-                      fontSize: 13,
-                      fontWeight: 600,
+          {sortedRows.map((c, index) => {
+            const isDragging = draggedIdx === index;
+            const isDragOver = dragOverIdx === index;
+            const dropClass = isDragOver
+              ? dragOverPos === "top"
+                ? "is-drag-over-top"
+                : "is-drag-over-bottom"
+              : "";
+
+            return (
+              <div
+                key={c.id}
+                draggable
+                onDragStart={(e) => onDragStart(e, index)}
+                onDragOver={(e) => onDragOver(e, index)}
+                onDragLeave={onDragLeave}
+                onDrop={(e) => onDrop(e, index)}
+                onDragEnd={onDragEnd}
+                className={`mn-tr mn-row mn-cols-cat ${isDragging ? "is-dragging" : ""} ${dropClass}`}
+                style={{ cursor: "grab" }}
+              >
+                <div className="mn-drag-handle" title="Drag to reorder">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                    <circle cx="9" cy="5" r="2" />
+                    <circle cx="9" cy="12" r="2" />
+                    <circle cx="9" cy="19" r="2" />
+                    <circle cx="15" cy="5" r="2" />
+                    <circle cx="15" cy="12" r="2" />
+                    <circle cx="15" cy="19" r="2" />
+                  </svg>
+                </div>
+                <span className="mn-id">#{c.id}</span>
+                <span className="mn-name" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  {c.image ? (
+                    <img
+                      src={getImageUrl(c.image)!}
+                      alt={c.name}
+                      style={{ width: 36, height: 36, borderRadius: 6, objectFit: "cover" }}
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: 6,
+                        background: "#f1f5f9",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "#94a3b8",
+                        fontSize: 13,
+                        fontWeight: 600,
+                      }}
+                    >
+                      {c.name.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  {c.name}
+                </span>
+                <span className="mn-sub">
+                  {c.productCount != null ? `${c.productCount} product${c.productCount === 1 ? "" : "s"}` : "—"}
+                </span>
+                <span className="mn-actions">
+                  <button
+                    type="button"
+                    className="mn-icon-btn"
+                    aria-label={`Edit ${c.name}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditing(c);
                     }}
                   >
-                    {c.name.charAt(0).toUpperCase()}
-                  </div>
-                )}
-                {c.name}
-              </span>
-              <span className="mn-sub">
-                {c.productCount != null ? `${c.productCount} product${c.productCount === 1 ? "" : "s"}` : "—"}
-              </span>
-              <span className="mn-actions">
-                <button
-                  type="button"
-                  className="mn-icon-btn"
-                  aria-label={`Edit ${c.name}`}
-                  onClick={() => setEditing(c)}
-                >
-                  <EditIcon />
-                </button>
-                <button
-                  type="button"
-                  className="mn-icon-btn danger"
-                  aria-label={`Delete ${c.name}`}
-                  onClick={() => setDeleting(c)}
-                >
-                  <TrashIcon />
-                </button>
-              </span>
-            </div>
-          ))}
+                    <EditIcon />
+                  </button>
+                  <button
+                    type="button"
+                    className="mn-icon-btn danger"
+                    aria-label={`Delete ${c.name}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDeleting(c);
+                    }}
+                  >
+                    <TrashIcon />
+                  </button>
+                </span>
+              </div>
+            );
+          })}
         </div>
       </ListState>
 
