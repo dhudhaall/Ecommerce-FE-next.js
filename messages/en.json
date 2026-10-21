@@ -338,12 +338,58 @@
       "iframe_title": "Map showing {name} at {address}, {city}"
     }
   },
-  "ProductsPage":{
-    "add_to_cart":"Add to Cart",
-    "no_products_found":"No products available in this category"
+  "ProductsPage": {
+    "add_to_cart": "Add to Cart",
+    "no_products_found": "No products available in this category",
+    "search_placeholder": "Search all products, descriptions, ingredients…",
+    "search_label": "Search products",
+    "clear_search": "Clear search",
+    "all_categories": "All",
+    "sort_by": "Sort by",
+    "sort_default": "Default",
+    "sort_price_asc": "Price: Low to High",
+    "sort_price_desc": "Price: High to Low",
+    "sort_name_asc": "Name: A to Z",
+    "sort_name_desc": "Name: Z to A",
+    "filter_price": "Price",
+    "price_all": "All Prices",
+    "price_under_10": "Under €10",
+    "price_10_20": "€10 – €20",
+    "price_over_20": "Over €20",
+    "showing_products": "Showing {count} items",
+    "found_results": "Found {count} items matching \"{query}\"",
+    "no_search_results": "No products found matching \"{query}\"",
+    "no_search_desc": "Try adjusting your search terms or clearing your filters to see more delicious options.",
+    "clear_filters": "Reset all filters"
+  },
+  "SEO": {
+    "defaultTitle": "Pizzeria Con Amore | Fresh Stone-Baked Pizza Delivery",
+    "titleTemplate": "%s | Pizzeria Con Amore",
+    "defaultDescription": "Delicious stone-baked pizza, pasta, burgers, and kitchen favourites made fresh and delivered hot to your door.",
+    "home": {
+      "title": "Fresh Stone-Baked Pizza Delivery | Pizzeria Con Amore",
+      "description": "Order authentic stone-baked pizza and kitchen favourites online with fast delivery or pickup from Pizzeria Con Amore."
+    },
+    "menu": {
+      "title": "Our Menu - Pizza, Pasta, Burgers & Drinks",
+      "description": "Explore our full menu of stone-baked pizzas, delicious pasta, burgers, sides, and drinks. Fast delivery to your doorstep."
+    },
+    "about": {
+      "title": "About Us",
+      "description": "Discover Pizzeria Con Amore - our history, stone-baked oven tradition, and our passion for using the freshest local ingredients."
+    },
+    "contact": {
+      "title": "Contact & Store Location",
+      "description": "Get in touch with Pizzeria Con Amore. Check our opening hours, delivery address, phone number, and directions."
+    },
+    "cart": {
+      "title": "Your Shopping Cart"
+    },
+    "checkout": {
+      "title": "Secure Checkout"
+    },
+    "success": {
+      "title": "Order Placed Successfully"
+    }
   }
-
-
-
-
 }

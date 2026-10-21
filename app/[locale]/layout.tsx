@@ -5,9 +5,10 @@ import Navbar from "./components/shared/navbar";
 import Footer from "./components/shared/footer";
 import "@/public/font-awesome/font-awesome.min.css";
 import { NextIntlClientProvider } from "next-intl";
-import { getMessages } from "next-intl/server";
+import { getMessages, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
+import { getAlternates, getSiteUrl } from "./lib/seo";
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({
@@ -25,10 +26,59 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "My Website",
-  description: "My localized website",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "SEO" });
+  const siteUrl = getSiteUrl();
+
+  return {
+    metadataBase: new URL(siteUrl),
+    title: {
+      default: t("defaultTitle"),
+      template: t("titleTemplate"),
+    },
+    description: t("defaultDescription"),
+    alternates: getAlternates("", locale),
+    openGraph: {
+      type: "website",
+      locale: locale === "de" ? "de_DE" : "en_US",
+      alternateLocale: locale === "de" ? ["en_US"] : ["de_DE"],
+      siteName: "Pizzeria Con Amore",
+      title: t("defaultTitle"),
+      description: t("defaultDescription"),
+      url: `${siteUrl}/${locale}/`,
+      images: [
+        {
+          url: "/images/banner.png",
+          width: 1200,
+          height: 630,
+          alt: "Pizzeria Con Amore",
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: t("defaultTitle"),
+      description: t("defaultDescription"),
+      images: ["/images/banner.png"],
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-video-preview": -1,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+      },
+    },
+  };
+}
 
 export default async function RootLayout({
   children,

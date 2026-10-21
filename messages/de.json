@@ -337,8 +337,58 @@
       "iframe_title": "Karte mit {name} in {address}, {city}"
     }
   },
-  "ProductsPage":{
-    "add_to_cart":"In den Warenkorb",
-    "no_products_found":"Keine Produkte in dieser Kategorie verfügbar"
+  "ProductsPage": {
+    "add_to_cart": "In den Warenkorb",
+    "no_products_found": "Keine Produkte in dieser Kategorie verfügbar",
+    "search_placeholder": "Alle Produkte, Beschreibungen, Zutaten durchsuchen…",
+    "search_label": "Produkte suchen",
+    "clear_search": "Suche löschen",
+    "all_categories": "Alle",
+    "sort_by": "Sortieren nach",
+    "sort_default": "Standard",
+    "sort_price_asc": "Preis: Aufsteigend",
+    "sort_price_desc": "Preis: Absteigend",
+    "sort_name_asc": "Name: A bis Z",
+    "sort_name_desc": "Name: Z bis A",
+    "filter_price": "Preis",
+    "price_all": "Alle Preise",
+    "price_under_10": "Unter 10 €",
+    "price_10_20": "10 € – 20 €",
+    "price_over_20": "Über 20 €",
+    "showing_products": "{count} Produkte angezeigt",
+    "found_results": "{count} Produkte für \"{query}\" gefunden",
+    "no_search_results": "Keine Produkte für \"{query}\" gefunden",
+    "no_search_desc": "Versuchen Sie andere Suchbegriffe oder setzen Sie Ihre Filter zurück.",
+    "clear_filters": "Filter zurücksetzen"
+  },
+  "SEO": {
+    "defaultTitle": "Pizzeria Con Amore | Frische Steinofenpizza Lieferservice",
+    "titleTemplate": "%s | Pizzeria Con Amore",
+    "defaultDescription": "Köstliche Steinofenpizza, Pasta, Burger und beliebte Gerichte frisch zubereitet und heiß direkt zu Ihnen geliefert.",
+    "home": {
+      "title": "Frische Steinofenpizza Lieferservice | Pizzeria Con Amore",
+      "description": "Bestellen Sie authentische Steinofenpizza und Spezialitäten online. Schnelle Lieferung und bequeme Abholung bei Pizzeria Con Amore."
+    },
+    "menu": {
+      "title": "Speisekarte - Pizza, Pasta, Burger & Getränke",
+      "description": "Entdecken Sie unsere Speisekarte mit Steinofenpizzen, Pasta, Burgern und Getränken. Jetzt bequem online bestellen."
+    },
+    "about": {
+      "title": "Über uns",
+      "description": "Erfahren Sie mehr über Pizzeria Con Amore – unsere Tradition im Steinofenbacken und unsere Leidenschaft für beste Zutaten."
+    },
+    "contact": {
+      "title": "Kontakt & Öffnungszeiten",
+      "description": "Kontaktieren Sie Pizzeria Con Amore. Öffnungszeiten, Adresse, Telefonnummer und Wegbeschreibung auf einen Blick."
+    },
+    "cart": {
+      "title": "Ihr Warenkorb"
+    },
+    "checkout": {
+      "title": "Sichere Kasse"
+    },
+    "success": {
+      "title": "Bestellung erfolgreich"
+    }
   }
 }
