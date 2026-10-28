@@ -23,7 +23,7 @@ export async function generateMetadata({
   };
 }
 
-export async function getCategories() {
+async function getCategories() {
   const url = `${process.env.NEXT_PUBLIC_baseURL}/categories`; // ← keep your real URL here
 
   const res = await fetch(url, { cache: "no-store" });
