@@ -23,32 +23,31 @@ const HOURS: {
 }[] = [
   {
     day: "Monday",
-    time: "10:00 AM – 10:00 PM",
+    time: "11:00 – 14:00, 16:00 – 23:00",
   },
   {
     day: "Tuesday",
-    time: "10:00 AM – 10:00 PM",
+    time: "11:00 – 14:00, 16:00 – 23:00",
   },
   {
     day: "Wednesday",
-    time: "10:00 AM – 10:00 PM",
+    time: "11:00 – 14:00, 16:00 – 23:00",
   },
   {
     day: "Thursday",
-    time: "10:00 AM – 11:00 PM",
+    time: "11:00 – 14:00, 16:00 – 23:00",
   },
   {
     day: "Friday",
-    time: "10:00 AM – 11:30 PM",
+    time: "11:00 – 14:00, 16:00 – 00:00",
   },
   {
     day: "Saturday",
-    time: "12:00 PM – 11:30 PM",
+    time: "14:00 – 00:00",
   },
   {
     day: "Sunday",
-    time: "Closed",
-    closed: true,
+    time: "11:00 – 23:00",
   },
 ];
 
@@ -403,9 +402,17 @@ export default function Contact() {
                   </span>
 
                   <span className="ct-time">
-                    {h.closed
-                      ? t("hours.closed")
-                      : h.time}
+                    {h.closed ? (
+                      t("hours.closed")
+                    ) : h.time.includes(", ") ? (
+                      <span style={{ display: "inline-flex", flexDirection: "column", alignItems: "flex-end", gap: "2px" }}>
+                        {h.time.split(", ").map((slot, sIdx) => (
+                          <span key={sIdx}>{slot}</span>
+                        ))}
+                      </span>
+                    ) : (
+                      h.time
+                    )}
                   </span>
 
                 </li>

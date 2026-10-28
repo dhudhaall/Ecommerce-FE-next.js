@@ -90,17 +90,17 @@ export default function Footer() {
           <ul className="hm-foot-hours">
             <li>
               <span>{t("hours.mondayThursday")}</span>
-              <span>11:00 – 22:00</span>
+              <span>11:00 – 14:00 & 16:00 – 23:00</span>
             </li>
 
             <li>
               <span>{t("hours.fridaySaturday")}</span>
-              <span>11:00 – 23:30</span>
+              <span>Fr: 11–14 & 16–00 | Sa: 14–00</span>
             </li>
 
             <li>
               <span>{t("hours.sunday")}</span>
-              <span>12:00 – 22:00</span>
+              <span>11:00 – 23:00</span>
             </li>
           </ul>
         </div>
