@@ -2,10 +2,11 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { loadStripe, type StripeElementsOptions } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import { StripeCardSection } from "./StripeCardSection";
+import { getRestaurantStatus, type RestaurantStatus } from "../lib/restaurantHours";
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
@@ -78,10 +79,41 @@ const normalize = (s: unknown) =>
 
 export default function Checkout() {
   const t = useTranslations("CheckoutPage");
+  const locale = useLocale();
   const router = useRouter();
 
   const [deliveryType, setDeliveryType] = useState<DeliveryType>("delivery");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cash");
+
+  // Restaurant opening hours & scheduling state
+  const [restaurantStatus, setRestaurantStatus] = useState<RestaurantStatus | null>(null);
+  const [showClosedModal, setShowClosedModal] = useState(false);
+  const [scheduleMode, setScheduleMode] = useState<"asap" | "later">("asap");
+  const [selectedDay, setSelectedDay] = useState<"today" | "tomorrow">("today");
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>("");
+  const scheduleCardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const status = getRestaurantStatus(locale);
+    setRestaurantStatus(status);
+
+    if (!status.isOpen) {
+      setShowClosedModal(true);
+      setScheduleMode("later");
+      const firstDay = status.availableDays[0];
+      if (firstDay) {
+        setSelectedDay(firstDay.key);
+        if (firstDay.slots.length > 0) {
+          setSelectedTimeSlot(firstDay.slots[0]);
+        }
+      }
+    } else {
+      const todayDay = status.availableDays.find((d) => d.key === "today");
+      if (todayDay && todayDay.slots.length > 0) {
+        setSelectedTimeSlot(todayDay.slots[0]);
+      }
+    }
+  }, [locale]);
 
   const [form, setForm] = useState<FormState>({
     firstName: "",
@@ -358,6 +390,29 @@ export default function Checkout() {
       })) ?? [],
 
     currency: "eur",
+
+    notes: (() => {
+      if (restaurantStatus && (!restaurantStatus.isOpen || scheduleMode === "later") && selectedTimeSlot) {
+        const dayLabel =
+          selectedDay === "tomorrow"
+            ? locale === "de"
+              ? "Morgen"
+              : "Tomorrow"
+            : locale === "de"
+            ? "Heute"
+            : "Today";
+        const typeLabel =
+          deliveryType === "delivery"
+            ? locale === "de"
+              ? "Lieferung"
+              : "Delivery"
+            : locale === "de"
+            ? "Abholung"
+            : "Pickup";
+        return `[Vorbestellung ${typeLabel}: ${dayLabel} um ${selectedTimeSlot} Uhr]`;
+      }
+      return null;
+    })(),
   });
 
   type OrderPayload = ReturnType<typeof buildPayload>;
@@ -542,6 +597,120 @@ export default function Checkout() {
             >
               {t("pickup")}
             </button>
+          </div>
+
+          {/* Scheduled Delivery/Pickup Time Picker */}
+          <div ref={scheduleCardRef} className="co-schedule-card">
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
+              <span style={{ fontWeight: 600, fontSize: "14.5px", color: "var(--co-ink, #0f172a)", display: "flex", alignItems: "center", gap: "6px" }}>
+                🕒 {deliveryType === "delivery" ? t("schedule.time_title") : t("schedule.pickup_time_title")}
+              </span>
+              {restaurantStatus?.isOpen && (
+                <span style={{ fontSize: "12px", background: "#dcfce7", color: "#166534", padding: "2px 8px", borderRadius: "999px", fontWeight: 600 }}>
+                  ● {locale === "de" ? "Geöffnet" : "Open now"}
+                </span>
+              )}
+            </div>
+
+            {/* Closed Notice Banner */}
+            {restaurantStatus && !restaurantStatus.isOpen && (
+              <div className="co-schedule-banner">
+                <span className="co-schedule-banner-icon">⏰</span>
+                <div>
+                  <strong>{locale === "de" ? "Küche öffnet bald" : "Kitchen opens soon"}:</strong>{" "}
+                  {t("schedule.closed_preorder_notice", {
+                    timeUntilOpen: restaurantStatus.formattedTimeUntilOpen,
+                    nextOpenTime: restaurantStatus.nextOpenTime,
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* If open, give choice between ASAP and Schedule */}
+            {restaurantStatus?.isOpen && (
+              <div className="co-schedule-tabs">
+                <button
+                  type="button"
+                  className={`co-schedule-tab ${scheduleMode === "asap" ? "active" : ""}`}
+                  onClick={() => setScheduleMode("asap")}
+                >
+                  ⚡ {t("schedule.asap")}
+                </button>
+                <button
+                  type="button"
+                  className={`co-schedule-tab ${scheduleMode === "later" ? "active" : ""}`}
+                  onClick={() => setScheduleMode("later")}
+                >
+                  📅 {t("schedule.schedule_later")}
+                </button>
+              </div>
+            )}
+
+            {/* Time Slot Picker (Always visible if closed, or if "later" chosen) */}
+            {(!restaurantStatus?.isOpen || scheduleMode === "later") && (
+              <div>
+                {/* Day selector if tomorrow is available */}
+                {(restaurantStatus?.availableDays?.length ?? 0) > 1 && (
+                  <div style={{ display: "flex", gap: "8px", marginBottom: "10px" }}>
+                    {restaurantStatus?.availableDays.map((d) => (
+                      <button
+                        key={d.key}
+                        type="button"
+                        style={{
+                          flex: 1,
+                          padding: "6px 10px",
+                          fontSize: "12.5px",
+                          fontWeight: selectedDay === d.key ? 600 : 500,
+                          borderRadius: "8px",
+                          border: selectedDay === d.key ? "1px solid var(--co-pine, #17251d)" : "1px solid #cbd5e1",
+                          background: selectedDay === d.key ? "var(--co-pine-soft, #eef1ec)" : "#ffffff",
+                          color: selectedDay === d.key ? "var(--co-pine, #17251d)" : "#64748b",
+                          cursor: "pointer",
+                        }}
+                        onClick={() => {
+                          setSelectedDay(d.key);
+                          if (d.slots.length > 0) {
+                            setSelectedTimeSlot(d.slots[0]);
+                          }
+                        }}
+                      >
+                        {d.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Slots Grid */}
+                <div style={{ fontSize: "12px", color: "var(--co-muted, #64748b)", marginBottom: "6px" }}>
+                  {t("schedule.choose_time")}
+                </div>
+
+                <div className="co-time-grid">
+                  {(
+                    restaurantStatus?.availableDays.find((d) => d.key === selectedDay)?.slots || []
+                  ).map((slot) => (
+                    <button
+                      key={slot}
+                      type="button"
+                      className={`co-time-chip ${selectedTimeSlot === slot ? "active" : ""}`}
+                      onClick={() => setSelectedTimeSlot(slot)}
+                    >
+                      {slot}
+                    </button>
+                  ))}
+                </div>
+
+                {selectedTimeSlot && (
+                  <div style={{ marginTop: "10px", fontSize: "12.5px", color: "var(--co-pine, #17251d)", fontWeight: 500 }}>
+                    ✓ {t("schedule.selected_time")}:{" "}
+                    <strong>
+                      {selectedDay === "tomorrow" ? t("schedule.day_tomorrow") : t("schedule.day_today")},{" "}
+                      {selectedTimeSlot} {locale === "de" ? "Uhr" : ""}
+                    </strong>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Contact details */}
@@ -755,6 +924,22 @@ export default function Checkout() {
                   </span>
                 </div>
 
+                {/* Scheduled Time in Receipt */}
+                <div className="co-row">
+                  <span className="co-lbl">{deliveryType === "delivery" ? t("schedule.time_title") : t("schedule.pickup_time_title")}</span>
+                  <span style={{ fontWeight: 600, color: "var(--co-pine, #17251d)", fontSize: "13px" }}>
+                    {restaurantStatus && (!restaurantStatus.isOpen || scheduleMode === "later") ? (
+                      selectedTimeSlot ? (
+                        `📅 ${selectedDay === "tomorrow" ? t("schedule.day_tomorrow") : t("schedule.day_today")}, ${selectedTimeSlot}`
+                      ) : (
+                        t("schedule.schedule_later")
+                      )
+                    ) : (
+                      `⚡ ${t("schedule.asap")}`
+                    )}
+                  </span>
+                </div>
+
                 <hr className="co-dashed" />
 
                 {/* Grand total */}
@@ -884,6 +1069,52 @@ export default function Checkout() {
           <ReceiptEdge />
         </aside>
       </div>
+
+      {/* Off-Hours Closed Modal Popup */}
+      {showClosedModal && restaurantStatus && !restaurantStatus.isOpen && (
+        <div className="co-modal-overlay" role="dialog" aria-modal="true">
+          <div className="co-modal-card">
+            <span className="co-modal-badge">
+              🌙 {t("schedule.closed_modal_badge")}
+            </span>
+
+            <h3 className="co-modal-title">
+              {t("schedule.closed_modal_title")}
+            </h3>
+
+            <p className="co-modal-desc">
+              {t("schedule.closed_modal_desc", {
+                timeUntilOpen: restaurantStatus.formattedTimeUntilOpen,
+                nextOpenTime: restaurantStatus.nextOpenTime,
+              })}{" "}
+              {t("schedule.closed_modal_cta")}
+            </p>
+
+            <div className="co-modal-actions">
+              <button
+                type="button"
+                className="co-modal-btn-primary"
+                onClick={() => {
+                  setShowClosedModal(false);
+                  setTimeout(() => {
+                    scheduleCardRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+                  }, 120);
+                }}
+              >
+                🕒 {t("schedule.closed_modal_button")}
+              </button>
+
+              <button
+                type="button"
+                className="co-modal-btn-secondary"
+                onClick={() => setShowClosedModal(false)}
+              >
+                {t("schedule.closed_modal_dismiss")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

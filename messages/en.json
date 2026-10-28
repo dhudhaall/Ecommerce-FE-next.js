@@ -194,6 +194,24 @@
     "enter_postal_code": "Enter postal code",
     "zone_ok": "We deliver to {area} ({fee} delivery{minOrder})",
 
+    "schedule": {
+      "closed_modal_title": "We're opening soon!",
+      "closed_modal_badge": "Currently Closed",
+      "closed_modal_desc": "Our kitchen is currently preparing fresh ingredients and will open in {timeUntilOpen} (at {nextOpenTime}).",
+      "closed_modal_cta": "You can pre-order right now by picking your preferred delivery or pickup time!",
+      "closed_modal_button": "Pick Delivery Time",
+      "closed_modal_dismiss": "Got it, continue",
+      "time_title": "Delivery Time",
+      "pickup_time_title": "Pickup Time",
+      "asap": "As soon as possible (~30–45 min)",
+      "schedule_later": "Schedule for later",
+      "closed_preorder_notice": "Kitchen opens in {timeUntilOpen} (at {nextOpenTime}). Please pick your preferred time:",
+      "choose_time": "Choose time:",
+      "day_today": "Today",
+      "day_tomorrow": "Tomorrow",
+      "selected_time": "Scheduled for"
+    },
+
     "fields": {
       "first_name": "First name",
       "last_name": "Last name",

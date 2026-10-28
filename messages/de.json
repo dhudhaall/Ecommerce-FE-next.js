@@ -193,6 +193,23 @@
     "delivery_address": "Lieferadresse",
     "enter_postal_code": "Postleitzahl eingeben",
     "zone_ok": "Wir liefern nach {area} ({fee} Lieferung{minOrder})",
+    "schedule": {
+      "closed_modal_title": "Wir öffnen in Kürze!",
+      "closed_modal_badge": "Momentan geschlossen",
+      "closed_modal_desc": "Unsere Küche bereitet gerade alles frisch vor und öffnet in {timeUntilOpen} (um {nextOpenTime} Uhr).",
+      "closed_modal_cta": "Sie können jetzt schon vorbestellen und Ihre gewünschte Zeit für die Lieferung oder Abholung wählen!",
+      "closed_modal_button": "Lieferzeit wählen",
+      "closed_modal_dismiss": "Verstanden, weiter",
+      "time_title": "Lieferzeit",
+      "pickup_time_title": "Abholzeit",
+      "asap": "Schnellstmöglich (~30–45 Min.)",
+      "schedule_later": "Später liefern lassen",
+      "closed_preorder_notice": "Küche öffnet in {timeUntilOpen} (um {nextOpenTime} Uhr). Bitte wählen Sie Ihre gewünschte Zeit:",
+      "choose_time": "Uhrzeit wählen:",
+      "day_today": "Heute",
+      "day_tomorrow": "Morgen",
+      "selected_time": "Geplant für"
+    },
     "fields": {
       "first_name": "Vorname",
       "last_name": "Nachname",
