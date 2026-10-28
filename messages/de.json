@@ -229,6 +229,7 @@
 
     "total": "Gesamt",
     "delivery_fee": "Liefergebühr",
+    "free": "Kostenlos",
     "grand_total": "Gesamtsumme",
 
     "payment_method": "Zahlungsart",

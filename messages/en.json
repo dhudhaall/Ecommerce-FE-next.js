@@ -230,6 +230,7 @@
 
     "total": "Total",
     "delivery_fee": "Delivery fee",
+    "free": "Free",
     "grand_total": "Grand total",
 
     "payment_method": "Payment method",
