@@ -7,13 +7,13 @@ import { useTranslations } from "next-intl";
 
 const STORE = {
   name: "Pizzeria Con Amore",
-  address: "123 Main Street",
-  postalCode: "10115",
-  city: "Berlin",
+  address: "Straßburgerstraße 63",
+  postalCode: "77767",
+  city: "Appenweier",
   country: "Germany",
-  phone: "+49 123 456789",
-  phoneHref: "+49123456789",
-  email: "info@restaurant.com",
+  phone: "+49 7805 9165950",
+  phoneHref: "+4978059165950",
+  email: "info@pizzeriaconamore.com",
 };
 
 const HOURS: {
@@ -58,8 +58,11 @@ const todayIndex = (() => {
   return d === 0 ? 6 : d - 1;
 })();
 
+const GOOGLE_MAPS_LINK =
+  "https://www.google.com/maps/search/?api=1&query=Stra%C3%9Fburgerstra%C3%9Fe%2063%2C%20Appenweier";
+
 const MAPS_QUERY = encodeURIComponent(
-  `${STORE.address}, ${STORE.postalCode} ${STORE.city}, ${STORE.country}`
+  `${STORE.name}, ${STORE.address}, ${STORE.postalCode} ${STORE.city}`
 );
 
 export default function Contact() {
@@ -355,7 +358,7 @@ export default function Contact() {
 
               <a
                 className="ct-btn outline"
-                href={`https://www.google.com/maps/search/?api=1&query=${MAPS_QUERY}`}
+                href={GOOGLE_MAPS_LINK}
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -711,7 +714,7 @@ export default function Contact() {
 
           <a
             className="ct-btn outline"
-            href={`https://www.google.com/maps/search/?api=1&query=${MAPS_QUERY}`}
+            href={GOOGLE_MAPS_LINK}
             target="_blank"
             rel="noopener noreferrer"
           >

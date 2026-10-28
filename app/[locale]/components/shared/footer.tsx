@@ -44,23 +44,23 @@ export default function Footer() {
             <li>
               <span className="hm-foot-ic">📍</span>
               <span>
-                Musterstraße 12
+                Straßburgerstraße 63
                 <br />
-                10115 Berlin, Germany
+                77767 Appenweier, Germany
               </span>
             </li>
 
             <li>
               <span className="hm-foot-ic">✉️</span>
-              <a href="mailto:hello@pizzeriaConAmore.com">
-                hello@pizzeriaConAmore.com
+              <a href="mailto:info@pizzeriaconamore.com">
+                info@pizzeriaconamore.com
               </a>
             </li>
 
             <li>
               <span className="hm-foot-ic">📞</span>
-              <a href="tel:+493012345678">
-                +49 30 1234 5678
+              <a href="tel:+4978059165950">
+                +49 7805 9165950
               </a>
             </li>
           </ul>

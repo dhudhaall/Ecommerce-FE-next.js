@@ -45,20 +45,20 @@ export function getRestaurantJsonLd(locale: string) {
     name: "Pizzeria Con Amore",
     image: `${siteUrl}/images/banner.png`,
     url: `${siteUrl}/${locale}/`,
-    telephone: "+49 123 456789",
+    telephone: "+49 7805 9165950",
     priceRange: "€€",
     servesCuisine: ["Italian", "Pizza"],
     address: {
       "@type": "PostalAddress",
-      streetAddress: "123 Main Street",
-      addressLocality: "Berlin",
-      postalCode: "10115",
+      streetAddress: "Straßburgerstraße 63",
+      addressLocality: "Appenweier",
+      postalCode: "77767",
       addressCountry: "DE",
     },
     geo: {
       "@type": "GeoCoordinates",
-      latitude: 52.52,
-      longitude: 13.405,
+      latitude: 48.5570297,
+      longitude: 7.9768665,
     },
     openingHoursSpecification: [
       {
